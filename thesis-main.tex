@@ -7,16 +7,15 @@
 \usepackage{acronym}
 
 \school{\unibo}
-\programme{Corso di Laurea [Magistrale?] in Ingegneria e Scienze Informatiche}
+\programme{Corso di Laurea in Ingegneria e Scienze Informatiche}
 \title{Fancy Title}
-\author{Candidate Name}
+\author{Alessandro Gardini}
 \date{\today}
-\subject{Supervisor's course name}
-\supervisor{Prof. Supervisor Here}
-\cosupervisor{Dott. CoSupervisor 1}
-\morecosupervisor{Dott. CoSupervisor 2}
+\subject{Programmazione ad oggetti}
+\supervisor{Mirko Viroli}
+\cosupervisor{Gianluca Aguzzi}
 \session{I}
-\academicyear{2022-2023}
+\academicyear{2025-2026}
 
 % Definition of acronyms
 \acrodef{IoT}{Internet of Thing}
@@ -46,58 +45,71 @@ Optional. Max a few lines.
 \mainmatter
 
 %----------------------------------------------------------------------------------------
-\chapter{Introduction}
-\label{chap:introduction}
+\chapter{Introduzione}
+\label{chap:introduzione}
 %----------------------------------------------------------------------------------------
 
-Write your intro here.
-\sidenote{Add sidenotes in this way. They are named after the author of the thesis}
+%----------------------------------------------------------------------------------------
+\chapter{Background}
+\label{chap:background}
+%----------------------------------------------------------------------------------------
 
-You can use acronyms that your defined previously,
-such as \ac{IoT}.
-%
-If you use acronyms twice,
-they will be written in full only once
-(indeed, you can mention the \ac{IoT} now without it being fully explained).
-%
-In some cases, you may need a plural form of the acronym.
-%
-For instance,
-that you are discussing \acp{vm},
-you may need both \ac{vm} and \acp{vm}.
+\section{Studio Aggregate Computing}
 
-\paragraph{Structure of the Thesis}
+\section{Progetto allo stato attuale}
 
-\note{At the end, describe the structure of the paper}
+%----------------------------------------------------------------------------------------
+\chapter{Analisi}
+\label{chap:analisi}
+%----------------------------------------------------------------------------------------
 
-\chapter{State of the art}
+\section{Goal di alto livello}
 
-I suggest referencing stuff as follows: \cref{fig:random-image} or \Cref{fig:random-image}
+\section{Vincoli}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=.8\linewidth]{figures/random-image.pdf}
-    \caption{Some random image}
-    \label{fig:random-image}
-\end{figure}
+\section{Requisiti funzionali e non funzionali}
 
-\section{Some cool topic}
+\section{Analisi delle problematiche}
 
-\chapter{Contribution}
+\section{Entità di Dominio}
 
-You may also put some code snippet (which is NOT float by default), eg: \cref{lst:random-code}.
+%----------------------------------------------------------------------------------------
+\chapter{Progettazione}
+\label{chap:progettazione}
+%----------------------------------------------------------------------------------------
 
-\lstinputlisting[float,language=Java,label={lst:random-code}]{listings/HelloWorld.java}
+\section{Architetturale rispetto al sistema}
 
-\section{Fancy formulas here}
+\section{Architetturale di dettaglio dell’applicativo}
+
+%----------------------------------------------------------------------------------------
+\chapter{Implementazione}
+\label{chap:implementazione}
+%----------------------------------------------------------------------------------------
+
+\section{Organizzazione del codice e stack tecnologico}
+
+\section{Server di protocollo realizzati}
+
+%----------------------------------------------------------------------------------------
+\chapter{Valutazione}
+\label{chap:valutazione}
+%----------------------------------------------------------------------------------------
+
+\section{Testing automatico}
+
+\section{Dimostrazione sperimentale}
+
+%----------------------------------------------------------------------------------------
+\chapter{Conclusione e Sviluppi Futuri}
+\label{chap:conclusione}
+%----------------------------------------------------------------------------------------
 
 %----------------------------------------------------------------------------------------
 % BIBLIOGRAPHY
 %----------------------------------------------------------------------------------------
 
 \backmatter
-
-\nocite{*} % Remove this as soon as you have the first citation
 
 \bibliographystyle{alpha}
 \bibliography{bibliography}
