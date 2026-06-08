@@ -303,5 +303,9 @@ TSWLatexianTemp*
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
 
+### Obsidian ###
+# config dir
+.obsidian/
+
 # For now i don't want the thesis-main.pdf commited
-thesis-main.pdf 
+thesis-main.pdf
