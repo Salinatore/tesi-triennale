@@ -1,3 +1,7 @@
 {
-    "ltex.language": "it"
+    "ltex.language": "it",
+    "latex-workshop.formatting.latex": "latexindent",
+    "[latex]": {
+        "editor.wordWrap": "on"
+    }
 }
