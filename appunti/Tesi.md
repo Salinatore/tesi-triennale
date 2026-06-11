@@ -23,7 +23,7 @@ Scrittura di documento di tesi triennale. Prima della tesi ho svolto un tirocini
   - **Requisiti funzionali e non funzionali**  
     - *Funzionali*: server HTTP REST, endpoint WebSocket, CoAP, comunicazione con il server interno.  
     - *Non funzionali*: estendibilità dei protocolli senza riscrivere il nucleo (es. nuovo protocollo integrabile senza riscrivere interamente il modulo), responsività sotto carico, manutenibilità generale.
-  - **Modello del Dominio**  
+  - **Modellazione delle Entità**  
     Individuazione delle entità chiave, le relazioni e diagramma UML riassuntivo.
 
 - **Progettazione**
@@ -56,3 +56,4 @@ Scrittura di documento di tesi triennale. Prima della tesi ho svolto un tirocini
 - Citazioni: usare chiavi coerenti con quelle già usate nelle sezioni
   precedenti; non citare lo stesso paper più volte per ogni singolo concetto,
   ma una volta sola nel punto più naturale
+- Testo: senza line break manuali nel sorgente

@@ -1,12 +1,38 @@
 \chapter{Analisi}
 \label{chap:analisi}
+%
+\section{Obiettivi}
+\label{sec:obiettivi}
+%
+Il lavoro descritto in questa tesi nasce dall'analisi dei limiti strutturali emersi nella sezione precedente, in particolare dalla dipendenza dell'intero sistema \textit{Emerge} dal protocollo MQTT come unico mezzo di comunicazione. L'obiettivo generale è stato quindi rendere il sistema \textbf{protocol-agnostic}: ridurre, cioè, il grado di accoppiamento rispetto a un singolo protocollo, aprendo la possibilità di integrare robot e client che utilizzino protocolli di comunicazione eterogenei senza dover modificare il nucleo del sistema.
 
-\input{mainmatter/3_analisi/1_goal_di_alto_livello}
-
+Un aspetto centrale emerso durante lo studio del problema è stata la distinzione tra due mondi distinti: quello interno al sistema, composto dai moduli già esistenti e dai robot che comunicano tramite MQTT, e quello esterno, composto da client non ancora integrati o gestiti in modo non ottimale --- come la dashboard, che ricorre a MQTT over WebSocket per aggirare i limiti del browser --- e da robot futuri che potrebbero non supportare MQTT. Questa separazione ha guidato la definizione dell'obiettivo: la soluzione doveva permettere di modificare indipendentemente il protocollo usato all'interno del sistema da quelli esposti verso l'esterno, senza che i due mondi si influenzassero a vicenda.
+%
 \section{Vincoli}
+\label{sec:vincoli}
+%
+Il contesto in cui si è operato imponeva due vincoli principali. Il primo riguardava la non modificabilità dei moduli già sviluppati: qualsiasi intervento che avesse richiesto di riscrivere o alterare il comportamento dei componenti esistenti era da considerarsi fuori scope. Questo vincolo, lungi dall'essere solo una restrizione esterna, rifletteva anche un obiettivo progettuale preciso: il contributo doveva integrarsi nel progetto esistente per estensione, non per sostituzione.
 
-\section{Requisiti funzionali e non funzionali}
+Il secondo vincolo riguardava il broker MQTT interno. Sebbene la dipendenza da MQTT rappresenti proprio il limite che si intendeva superare, la sua rimozione avrebbe comportato una riscrittura completa di tutti i moduli del sistema. MQTT rimaneva quindi il protocollo interno, e qualsiasi soluzione doveva operare al di sopra di questa viscosità tecnologica\footnote{Con \textit{viscosità tecnologica} si intende la resistenza al cambiamento che emerge quando una tecnologia è così profondamente integrata in un sistema da rendere la sua sostituzione sproporzionatamente costosa.} piuttosto che tentare di eliminarla.
+%
+\section{Requisiti}
+\label{sec:requisiti}
+%
+\subsection{Requisiti funzionali}
+\label{subsec:requisiti-funzionali}
+%
+Il sistema doveva esporre verso l'esterno un insieme di protocolli di comunicazione eterogenei, ciascuno con il proprio modello di interazione, permettendo a client diversi di accedere alle stesse risorse interne attraverso l'interfaccia più adatta alle proprie capacità. Per ciascun protocollo esposto, doveva essere possibile sia leggere il valore aggiornato di una risorsa sia aggiornarla, preservando verso l'esterno la semantica di notifica continua tipica del modello publish/subscribe, indipendentemente dal protocollo effettivamente usato. Tra le modalità di interazione supportate, il sistema doveva prevedere sia un modello request/response, per client che interrogano le risorse in modo puntuale, sia un modello a notifica, per client che necessitano di aggiornamenti continui senza dover interrogare ripetutamente il sistema.
 
-\section{Analisi delle problematiche}
-
-\section{Entità di Dominio}
+Doveva inoltre essere possibile aggiungere nuovi protocolli in futuro, sia sul lato esterno --- per supportare client con capacità diverse --- sia, potenzialmente, sul lato interno, qualora si volesse in futuro sostituire MQTT con un altro meccanismo di comunicazione tra i moduli.
+%
+\subsection{Requisiti non funzionali}
+\label{subsec:requisiti-non-funzionali}
+%
+Data la natura IoT del sistema, il modulo doveva essere in grado di gestire un elevato numero di connessioni simultanee, mantenendo latenze contenute anche sotto carico. L'estendibilità era un requisito trasversale: aggiungere un nuovo protocollo non avrebbe dovuto richiedere modifiche al nucleo già esistente del modulo, ma solo l'implementazione di una nuova componente aggiuntiva. Infine, il sistema doveva essere progettato in modo da facilitare il testing automatico, sia per verificare il comportamento dei singoli componenti sia per garantire la correttezza dell'integrazione complessiva.
+%
+% \section{Analisi delle problematiche}
+% per ora scippato, lasciando confluire quanto scritto qui dentro alla progettazione
+%
+\section{Modellazione delle Entità}
+\label{sec:modellazione-delle-entita}
+%
