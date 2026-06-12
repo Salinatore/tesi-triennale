@@ -1,6 +1,9 @@
 ## MacOS
 .DS_Store
 
+## Latexpand result
+all-in-one.tex
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
