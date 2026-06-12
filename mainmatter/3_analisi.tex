@@ -10,10 +10,9 @@ Un aspetto centrale emerso durante lo studio del problema è stata la distinzion
 %
 \section{Vincoli}
 \label{sec:vincoli}
-%
-Il contesto in cui si è operato imponeva due vincoli principali. Il primo riguardava la non modificabilità dei moduli già sviluppati: qualsiasi intervento che avesse richiesto di riscrivere o alterare il comportamento dei componenti esistenti era da considerarsi fuori scope. Questo vincolo, lungi dall'essere solo una restrizione esterna, rifletteva anche un obiettivo progettuale preciso: il contributo doveva integrarsi nel progetto esistente per estensione, non per sostituzione.
+Il contesto in cui si è operato imponeva due vincoli principali. Il primo riguardava la non modificabilità dei moduli già sviluppati: qualsiasi intervento che avesse richiesto di riscrivere o alterare il comportamento dei componenti esistenti era da considerarsi estraneo agli obiettivi del progetto. Questo vincolo stabiliva quindi, già in questa fase, che il contributo doveva integrarsi nel progetto esistente per estensione, non per sostituzione.
 
-Il secondo vincolo riguardava il broker MQTT interno. Sebbene la dipendenza da MQTT rappresenti proprio il limite che si intendeva superare, la sua rimozione avrebbe comportato una riscrittura completa di tutti i moduli del sistema. MQTT rimaneva quindi il protocollo interno, e qualsiasi soluzione doveva operare al di sopra di questa viscosità tecnologica\footnote{Con \textit{viscosità tecnologica} si intende la resistenza al cambiamento che emerge quando una tecnologia è così profondamente integrata in un sistema da rendere la sua sostituzione sproporzionatamente costosa.} piuttosto che tentare di eliminarla.
+Il secondo vincolo, strettamente connesso al primo, riguardava il broker MQTT interno. Sebbene la dipendenza da MQTT rappresenti proprio il limite che si intendeva superare, la sua rimozione avrebbe comportato una riscrittura completa di tutti i moduli del sistema. MQTT rimaneva quindi il protocollo interno, e qualsiasi soluzione doveva operare al di sopra di questa viscosità tecnologica\footnote{Con \textit{viscosità tecnologica} si intende la resistenza al cambiamento che emerge quando una tecnologia è così profondamente integrata in un sistema da rendere la sua sostituzione sproporzionatamente costosa.} piuttosto che tentare di eliminarla.
 %
 \section{Requisiti}
 \label{sec:requisiti}
@@ -35,4 +34,19 @@ Data la natura IoT del sistema, il modulo doveva essere in grado di gestire un e
 %
 \section{Modellazione delle Entità}
 \label{sec:modellazione-delle-entita}
+%
+Prima di procedere alla progettazione della soluzione, è stato necessario definire con precisione il modello del dominio: ogni risorsa che il gateway avrebbe dovuto esporre verso l'esterno doveva corrispondere a un'entità ben identificata, con una semantica chiara e stabile. A tale scopo sono stati analizzati i topic MQTT già presenti nel progetto, esaminandone la struttura e il payload, e da questi è stato condotto un lavoro di astrazione e generalizzazione che ha portato a un modello capace di accogliere anche categorie di dati non ancora presenti, come quelle derivanti da sensori ambientali che potrebbero essere aggiunti in futuro a ciascun robot.
+
+Il risultato di questa fase è sintetizzato nello schema in \cref{fig:entita}, che rappresenta le entità di dominio e le relazioni tra esse. Le entità si dividono in due gruppi concettualmente distinti: quelle che descrivono lo stato ambientale e fisico dei robot, e quelle che rappresentano gli input esterni forniti al sistema dall'operatore. Al centro dello schema si colloca \textit{Logic}, il componente che aggrega le informazioni provenienti da entrambi i gruppi e produce come output i comandi di movimento.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/analisi/entità.png}
+    \caption{Schema delle entità di dominio.}
+    \label{fig:entita}
+\end{figure}
+
+Nel primo gruppo, l'entità principale è \textit{Robot}, identificata univocamente da un proprio ID. A essa sono collegate diverse entità che ne descrivono lo stato: \textit{Neighborhood} rappresenta l'insieme dei robot vicini, caratterizzato da un tipo e da un raggio opzionale, ed è legato al robot da una relazione di aggregazione; \textit{Space} è lo spazio in cui il robot si muove, e all'interno di esso il robot assume una \textit{Pose}, composta da posizione e orientamento; infine, \textit{Sensing} rappresenta in modo generico tutte le categorie di dati sensoriali associabili a un robot, fungendo da punto di estensione del modello per acquisizioni future. L'entità \textit{Movement} rappresenta il comando di spostamento calcolato da \textit{Logic} a partire dallo stato ambientale ricevuto dai robot.
+
+Nel secondo gruppo si trovano le entità che modellano gli input operativi del sistema: \textit{Formation}, che indica la formazione geometrica impartita allo sciame, e \textit{Leader}, che identifica il robot designato come capo del gruppo. Entrambe sono modellate come sottotipi di una entità astratta \textit{Input}, ricevuta da \textit{Logic} per influenzare il comportamento aggregato del sistema.
 %
