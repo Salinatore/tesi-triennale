@@ -19,7 +19,7 @@ laboratorio) al TRL~6 (prototipo funzionante in ambiente reale)
 \cite{olechowski2015trl}.
 
 L'obiettivo principale era quindi realizzare un \textbf{dimostratore pratico e
-open-source} per il coordinamento di squadre di robot mobili, basato sui
+    open-source} per il coordinamento di squadre di robot mobili, basato sui
 principi dell'aggregate computing. Il dimostratore è costruito sulla libreria
 \textit{MacroSwarm} \cite{aguzzi2024macroswarm} e sul framework \textit{ScaFi},
 ed è stato concepito per essere flessibile, modulare e riutilizzabile da
@@ -30,8 +30,7 @@ Il progetto perseguiva tre obiettivi dimostrativi specifici. Il primo
 gruppo di robot riesca a disporsi autonomamente in pattern geometrici --- come
 cerchio o linea --- attraverso la sola computazione aggregata, senza alcun
 controllo centralizzato esplicito. Il secondo (\textbf{G2}) riguardava auto-guarigione: verificare che il sistema fosse in grado di
-ripristinare autonomamente la formazione desiderata in seguito a perturbazioni
-controllate, come lo spostamento fisico di un robot o la rimozione temporanea
+ripristinare autonomamente la formazione desiderata in seguito a perturbazioni, come lo spostamento fisico di un robot o la rimozione temporanea
 di un nodo dalla squadra. Il terzo (\textbf{G3}) riguardava
 l'\textit{indipendenza dalla topologia}: dimostrare che la logica di
 coordinamento rimanesse robusta e coerente al variare del numero di robot
@@ -61,12 +60,12 @@ sono illustrate in \cref{fig:connections}.
     \centering
     \includegraphics[width=\linewidth]{figures/background/connections_at_the_start.png}
     \caption{Connessioni tra i moduli del sistema Emerge nella versione iniziale.
-             Le frecce indicano il flusso dei messaggi MQTT (PUB/SUB) e le
-             chiamate HTTP verso il \texttt{neighborhood-system}.}
+        Le frecce indicano il flusso dei messaggi MQTT (PUB/SUB) e le
+        chiamate HTTP verso il \texttt{neighborhood-system}.}
     \label{fig:connections}
 \end{figure}
 
-Il modulo \texttt{aruco-detector}, scritto in Python con le librerie OpenCV e paho-mqtt, realizza il ruolo di \texttt{EnvironmentProvider}. Acquisisce in continuo il flusso video da una telecamera e individua i marker ArUco --- piccoli tag visivi stampati e applicati fisicamente su ciascun robot --- ricavando la posizione e l'orientamento di ogni robot nell'ambiente. I dati aggiornati vengono pubblicati sul broker MQTT al topic \texttt{robots/\{id\}/position}. 
+Il modulo \texttt{aruco-detector}, scritto in Python con le librerie OpenCV e paho-mqtt, realizza il ruolo di \texttt{EnvironmentProvider}. Acquisisce in continuo il flusso video da una telecamera e individua i marker ArUco --- piccoli tag visivi stampati e applicati fisicamente su ciascun robot --- ricavando la posizione e l'orientamento di ogni robot nell'ambiente. I dati aggiornati vengono pubblicati sul broker MQTT al topic \texttt{robots/\{id\}/position}.
 
 Il modulo \texttt{neighborhood-system}, anch'esso scritto in Python tramite Flask
 e \texttt{paho-mqtt}, contribuisce alla costruzione dell'ambiente computazionale
@@ -85,7 +84,7 @@ computativo del sistema e svolge il ruolo di \texttt{Orchestrator} ed
 \texttt{EnvironmentUpdate}. Si articola in due sottomoduli. Il sottomodulo
 \texttt{core} definisce la pipeline di controllo astratta
 $\texttt{EnvironmentProvider} \to \texttt{Orchestrator} \to
-\texttt{EnvironmentUpdate}$, parametrizzata sui tipi dominio-specifici
+    \texttt{EnvironmentUpdate}$, parametrizzata sui tipi dominio-specifici
 \texttt{ID}, \texttt{Position}, \texttt{Info} e \texttt{Actuation}: grazie a
 questi parametri di tipo, l'intera pipeline può essere riusata per qualsiasi
 sistema di robot, indipendentemente da come sono identificati, localizzati e
