@@ -29,7 +29,7 @@ Poiché nessun modulo del sistema attuale offre un servizio di questo tipo, si �
 %
 \section{Architetturale di dettaglio dell'applicativo}
 \label{sec:architetturale-di-dettaglio-applicativo}
-
+%
 Definito il ruolo del gateway rispetto al resto del sistema, è possibile passare alla
 progettazione della sua struttura interna. I requisiti impongono la realizzazione di un
 componente multi-protocollo con due facce distinte: una rivolta verso l'interno, che
@@ -69,6 +69,8 @@ esclusivamente attraverso i due canali condivisi. Nella \cref{fig:architettura-g
     \label{fig:architettura-gateway}
 \end{figure}
 
+Vale la pena osservare che il modello a bus non offre garanzie di consegna verso i singoli subscriber: un messaggio pubblicato viene considerato recapitato non appena è in transito sul canale, indipendentemente dal fatto che una connessione specifica lo abbia effettivamente ricevuto e processato. Questa caratteristica rende l'architettura naturalmente orientata a un modello fire-and-forget, che risulta coerente con la semantica di \ac{MQTT} e dei protocolli event-driven in generale, ma che è opportuno tenere presente qualora in futuro si volessero esporre interfacce con garanzie di consegna più stringenti.
+
 Introdotti i bus, l'inserimento della cache si ricava in modo naturale dall'architettura
 già definita. Come discusso nella \cref{sec:architetturale-rispetto-al-sistema}, i
 protocolli request/response richiedono che il gateway possa rispondere immediatamente
@@ -97,3 +99,32 @@ connessione \ac{MQTT} interna una seconda connessione che utilizzi un protocollo
 diverso, consentendo una transizione graduale verso un nuovo meccanismo di
 comunicazione interno senza dover modificare né le connessioni esterne né il nucleo del
 gateway.
+%
+\subsection{Progettazione delle connessioni}
+\label{subsec:progettazione-delle-connessioni}
+%
+Definita la struttura interna del gateway nei suoi elementi fondamentali --- connessioni, bus e cache --- è possibile scendere al livello delle singole connessioni e descrivere le scelte progettuali relative a ciascun protocollo supportato. Ogni connessione costituisce un sotto-modulo autonomo, responsabile di tradurre le primitive del proprio protocollo nelle operazioni sui bus interni, e viceversa. Le sezioni seguenti illustrano le decisioni prese per ciascuna di esse.
+%
+\subsubsection{Connessione \ac{MQTT}}
+\label{subsubsec:connessione-mqtt}
+%
+La connessione \ac{MQTT} rappresenta il lato interno del gateway: è l'unica connessione che interagisce direttamente con il broker, e il suo ruolo è quello di fare da ponte tra il mondo \ac{MQTT} e i bus interni. Il suo funzionamento è simmetrico: in direzione \textit{inbound} si iscrive all'\textit{Inbound Bus} e, a ogni messaggio ricevuto, lo pubblica sul broker con il topic e il payload corrispondenti; in direzione \textit{outbound} si sottoscrive a tutti i topic del broker e reinoltra ogni messaggio ricevuto sull'\textit{Outbound Bus}, rendendolo disponibile a tutte le connessioni esterne e alla cache.
+Nonostante il suo ruolo centrale, questa connessione è strutturalmente la più semplice dell'intero gateway: non espone interfacce verso l'esterno, non interagisce con la cache e non contiene logica applicativa propria. La sua semplicità è una conseguenza diretta dell'architettura a bus: tutta la complessità di coordinamento è già assorbita dal meccanismo di pubblicazione e sottoscrizione, e la connessione \ac{MQTT} si limita a operare come traduttore fedele tra il protocollo del broker e il canale interno.
+%
+\subsubsection{Connessione \ac{HTTP}}
+\label{subsubsec:connessione-http}
+%
+La connessione \ac{HTTP} espone le risorse del sistema attraverso un'interfaccia \\ \ac{REST}, organizzata attorno alle entità individuate in fase di analisi nella \cref{sec:modellazione-delle-entita}. Per ciascuna entità sono stati definiti due endpoint: uno in lettura, accessibile tramite il metodo \texttt{GET}, che restituisce il valore corrente della risorsa attingendo dalla cache, e uno in scrittura, accessibile tramite il metodo \texttt{PUT}, che consente a un client esterno di aggiornare lo stato di una risorsa pubblicando il nuovo valore sull'\textit{Inbound Bus}. È stato scelto \texttt{PUT} e non \texttt{POST}: \texttt{POST} implica convenzionalmente la creazione di una nuova risorsa, mentre \texttt{PUT} esprime l'aggiornamento di una risorsa già identificata dal suo \ac{URI}. Poiché le entità del sistema esistono indipendentemente dal gateway --- sono i robot e i moduli interni a definirne il ciclo di vita --- un'operazione di scrittura esterna non crea nulla, ma aggiorna un valore già presente nel dominio. L'uso di \texttt{PUT} riflette quindi in modo più preciso la semantica dell'operazione, e rimane valido anche nel caso in cui la risorsa non abbia ancora pubblicato alcun aggiornamento: il client la tratta comunque come una risorsa esistente di cui sta modificando lo stato. L'interfaccia esposta dalla connessione è documentata tramite uno schema \ac{OpenAPI}, che descrive in modo formale gli endpoint disponibili, i formati di input e output attesi e i codici di risposta previsti.
+%
+\subsubsection{Connessione \ac{CoAP}}
+\label{subsubsec:connessione-coap}
+%
+La connessione \ac{CoAP} ricalca nella struttura quella \ac{HTTP}: anche in questo caso vengono esposti endpoint in lettura e in scrittura per ciascuna risorsa, con una semantica analoga a quella già descritta per i metodi \texttt{GET} e \texttt{PUT}. \ac{CoAP} è stato progettato fin dall'origine come un protocollo \ac{REST} ottimizzato per ambienti con risorse computazionali e di rete limitate, riprendendo il modello request/response di \ac{HTTP} e adattandolo a un trasporto \ac{UDP} con overhead ridotto.
+
+Rispetto a \ac{HTTP}, tuttavia, \ac{CoAP} offre un meccanismo aggiuntivo che risulta particolarmente utile nel contesto del gateway: la modalità \textit{Observe}, definita nel \ac{RFC}~7641~\cite{rfc7641}. Tramite Observe, un client può registrare il proprio interesse verso una risorsa inviando una richiesta \texttt{GET} arricchita di un'apposita opzione; da quel momento, il server non si limita a rispondere una volta sola, ma continua a notificare il client ogni volta che il valore della risorsa cambia, senza che sia necessaria una nuova richiesta. Questo trasforma \ac{CoAP} da protocollo puramente request/response a un protocollo ibrido, capace di supportare anche un modello di interazione event-driven analogo a quello del broker \ac{MQTT} interno.
+Per il gateway, l'integrazione di Observe si traduce nel seguente comportamento: quando un client si registra come osservatore di una risorsa, la connessione \ac{CoAP} si iscrive all'\textit{Outbound Bus}, filtrando i messaggi relativi a quella risorsa specifica, a ogni aggiornamento ricevuto, invia una notifica al client registrato.
+%
+\subsubsection{WebSocket}
+\label{subsubsec:connessione-websocket}
+%
+% TODO: da completare in una fase successiva.
