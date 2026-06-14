@@ -57,3 +57,7 @@ Scrittura di documento di tesi triennale. Prima della tesi ho svolto un tirocini
   precedenti; non citare lo stesso paper più volte per ogni singolo concetto,
   ma una volta sola nel punto più naturale
 - Testo: senza line break manuali nel sorgente
+
+How to define acronyms:
+\acrodef{IoT}{Internet of Thing}
+\acrodef{vm}[VM]{Virtual Machine}
