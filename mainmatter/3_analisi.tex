@@ -29,8 +29,18 @@ Doveva inoltre essere possibile aggiungere nuovi protocolli in futuro, sia sul l
 %
 Data la natura IoT del sistema, il modulo doveva essere in grado di gestire un elevato numero di connessioni simultanee, mantenendo latenze contenute anche sotto carico. L'estendibilità era un requisito trasversale: aggiungere un nuovo protocollo non avrebbe dovuto richiedere modifiche al nucleo già esistente del modulo, ma solo l'implementazione di una nuova componente aggiuntiva. Infine, il sistema doveva essere progettato in modo da facilitare il testing automatico, sia per verificare il comportamento dei singoli componenti sia per garantire la correttezza dell'integrazione complessiva.
 %
-% \section{Analisi delle problematiche}
-% per ora scippato, lasciando confluire quanto scritto qui dentro alla progettazione
+\subsection{Profili di utilizzo}
+\label{subsec:profili-di-utilizzo}
+%
+I client che il gateway dovrà servire non sono omogenei né per capacità né per modello di interazione. È utile distinguere tre profili principali.
+
+Il primo è quello del client browser: un'applicazione web come la dashboard attuale, che non può aprire connessioni MQTT native e necessita quindi di un'interfaccia basata su protocolli HTTP o derivati.
+
+Il secondo è quello del dispositivo embedded: un robot o sensore con risorse computazionali e di rete limitate, per cui potrebbe non essere praticabile l'uso di stack TCP completi, e che beneficia di protocolli progettati per ambienti vincolati.
+
+Il terzo è quello del client generico: un sistema esterno di supervisione o un operatore che interagisce con il sistema in modo puntuale, privilegiando la semplicità di integrazione tramite interfacce standard e ben documentate.
+
+Questi tre profili non esauriscono tutti i casi possibili, ma guidano le scelte progettuali relative ai protocolli esposti dal gateway.
 %
 \section{Modellazione delle Entità}
 \label{sec:modellazione-delle-entita}
