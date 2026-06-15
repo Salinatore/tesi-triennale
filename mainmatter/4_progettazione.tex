@@ -30,37 +30,13 @@ Poiché nessun modulo del sistema attuale offre un servizio di questo tipo, si �
 \section{Architetturale di dettaglio dell'applicativo}
 \label{sec:architetturale-di-dettaglio-applicativo}
 %
-Definito il ruolo del gateway rispetto al resto del sistema, è possibile passare alla
-progettazione della sua struttura interna. I requisiti impongono la realizzazione di un
-componente multi-protocollo con due facce distinte: una rivolta verso l'interno, che
-dialoga con il broker \ac{MQTT}, e una rivolta verso l'esterno, che espone ai client le
-interfacce appropriate a ciascun protocollo. Un ulteriore vincolo trasversale, emerso
-già in fase di analisi, è che aggiungere il supporto a un nuovo protocollo non debba
-richiedere modifiche al nucleo del modulo, ma si traduca esclusivamente
-nell'implementazione di una nuova componente aggiuntiva.
+Definito il ruolo del gateway rispetto al resto del sistema, è possibile passare alla progettazione della sua struttura interna. I requisiti impongono la realizzazione di un componente multi-protocollo con due facce distinte: una rivolta verso l'interno, che dialoga con il broker \ac{MQTT}, e una rivolta verso l'esterno, che espone ai client le interfacce appropriate a ciascun protocollo. Un ulteriore vincolo trasversale, emerso già in fase di analisi, è che aggiungere il supporto a un nuovo protocollo non debba richiedere modifiche al nucleo del modulo, ma si traduca esclusivamente nell'implementazione di una nuova componente aggiuntiva.
 
-L'approccio adottato per soddisfare questi requisiti si articola attorno a tre elementi
-principali: le \textit{connessioni}, i \textit{bus} di comunicazione interni e la
-\textit{cache}.
+L'approccio adottato per soddisfare questi requisiti si articola attorno a tre elementi principali: le \textit{connessioni}, i \textit{bus} di comunicazione interni e la \textit{cache}.
 
-Le connessioni sono sotto-moduli del gateway, ciascuno responsabile della gestione di
-un gruppo di interfacce esterne omogenee: ad esempio, il supporto a \ac{HTTP} REST
-sarà incapsulato in una connessione dedicata, così come il supporto a WebSocket o a
-\ac{CoAP}. Questa scelta mantiene la complessità di ciascun protocollo confinata
-all'interno del sotto-modulo corrispondente, rendendo il nucleo del gateway ignaro dei
-dettagli di ciascuna tecnologia esposta.
+Le connessioni sono sotto-moduli del gateway, ciascuno responsabile della gestione di un gruppo di interfacce esterne: ad esempio, il supporto a \ac{HTTP} \ac{REST} sarà incapsulato in una connessione dedicata, così come il supporto a WebSocket o a \ac{CoAP}. Questa scelta mantiene la complessità di ciascun protocollo confinata all'interno del sotto-modulo corrispondente, rendendo il nucleo del gateway ignaro dei dettagli di ciascuna tecnologia esposta.
 
-I bus sono i canali attraverso cui le connessioni si scambiano messaggi senza
-conoscersi direttamente. Ne sono stati definiti due: l'\textit{Inbound Bus}, che
-trasporta i messaggi provenienti dall'esterno verso la connessione interna responsabile
-di pubblicarli sul broker \ac{MQTT}, e l'\textit{Outbound Bus}, che trasporta gli
-aggiornamenti ricevuti dal broker verso tutte le connessioni esterne interessate. Tramite
-dependency injection, entrambi i bus vengono passati a ciascuna connessione al momento
-dell'inizializzazione: ogni connessione può pubblicare messaggi su un bus oppure
-iscriversi a esso, ricevendo una callback ogni volta che un altro componente vi pubblica.
-In questo modo il gateway opera come una rete di componenti disaccoppiati, coordinati
-esclusivamente attraverso i due canali condivisi. Nella \cref{fig:architettura-gateway}
-è riportata una rappresentazione schematica di questa struttura.
+I bus sono i canali attraverso cui le connessioni si scambiano messaggi senza conoscersi direttamente. Ne sono stati definiti due: l'\textit{Inbound Bus}, che trasporta i messaggi provenienti dall'esterno verso la connessione interna responsabile di pubblicarli sul broker \ac{MQTT}, e l'\textit{Outbound Bus}, che trasporta gli aggiornamenti ricevuti dal broker verso tutte le connessioni esterne interessate. Tramite dependency injection, entrambi i bus vengono passati a ciascuna connessione al momento dell'inizializzazione: ogni connessione può pubblicare messaggi su un bus oppure iscriversi a esso, ricevendo una callback ogni volta che un altro componente vi pubblica. In questo modo il gateway opera come una rete di componenti disaccoppiati, coordinati esclusivamente attraverso i due canali condivisi. Nella \cref{fig:architettura-gateway} è riportata una rappresentazione schematica di questa struttura.
 
 \begin{figure}
     \centering
@@ -71,34 +47,11 @@ esclusivamente attraverso i due canali condivisi. Nella \cref{fig:architettura-g
 
 Vale la pena osservare che il modello a bus non offre garanzie di consegna verso i singoli subscriber: un messaggio pubblicato viene considerato recapitato non appena è in transito sul canale, indipendentemente dal fatto che una connessione specifica lo abbia effettivamente ricevuto e processato. Questa caratteristica rende l'architettura naturalmente orientata a un modello fire-and-forget, che risulta coerente con la semantica di \ac{MQTT} e dei protocolli event-driven in generale, ma che è opportuno tenere presente qualora in futuro si volessero esporre interfacce con garanzie di consegna più stringenti.
 
-Introdotti i bus, l'inserimento della cache si ricava in modo naturale dall'architettura
-già definita. Come discusso nella \cref{sec:architetturale-rispetto-al-sistema}, i
-protocolli request/response richiedono che il gateway possa rispondere immediatamente
-al valore corrente di una risorsa, indipendentemente da quando è stato pubblicato
-l'ultimo aggiornamento. A tale scopo, la cache si iscrive all'\textit{Outbound Bus} e
-aggiorna la propria snapshot a ogni messaggio in transito, costruendo una visione
-coerente dello stato del sistema. Come le connessioni, anche la cache viene passata
-tramite dependency injection ai soli sotto-moduli che la richiedono, ovvero quelli che
-implementano protocolli request/response.
+Introdotti i bus, l'inserimento della cache si ricava in modo naturale dall'architettura già definita. Come discusso nella \cref{sec:architetturale-rispetto-al-sistema}, i protocolli request/response richiedono che il gateway possa rispondere immediatamente al valore corrente di una risorsa, indipendentemente da quando è stato pubblicato l'ultimo aggiornamento. A tale scopo, la cache si iscrive all'\textit{Outbound Bus} e aggiorna la propria snapshot a ogni messaggio in transito, costruendo una visione coerente dello stato del sistema. Come le connessioni, anche la cache viene passata tramite dependency injection ai soli sotto-moduli che la richiedono, ovvero quelli che implementano protocolli request/response.
 
-Un aspetto rilevante riguarda il momento in cui un messaggio viene considerato valido
-ai fini della cache. Quando un client esterno pubblica un aggiornamento tramite una
-qualsiasi interfaccia del gateway, il valore non viene registrato immediatamente: il
-messaggio percorre prima l'\textit{Inbound Bus}, viene pubblicato sul broker \ac{MQTT}
-dalla connessione interna, e solo dopo che il broker lo ha ritrasmesso al gateway stesso
---- come farebbe con qualsiasi altro subscriber --- esso transita sull'\textit{Outbound
-    Bus} e viene acquisito dalla cache. Questa scelta garantisce che i valori memorizzati
-siano sempre quelli effettivamente visibili agli altri moduli del sistema, e non stati
-intermedi non ancora confermati.
+Un aspetto rilevante riguarda il momento in cui un messaggio viene considerato valido ai fini della cache. Quando un client esterno pubblica un aggiornamento tramite una qualsiasi interfaccia del gateway, il valore non viene registrato immediatamente: il messaggio percorre prima l'\textit{Inbound Bus}, viene pubblicato sul broker \ac{MQTT} dalla connessione interna, e solo dopo che il broker lo ha ritrasmesso al gateway stesso --- come farebbe con qualsiasi altro subscriber --- esso transita sull'\textit{Outbound Bus} e viene acquisito dalla cache. Questa scelta garantisce che i valori memorizzati siano sempre quelli effettivamente visibili agli altri moduli del sistema, e non stati intermedi non ancora confermati.
 
-Come già osservato per l'architettura di sistema, anche a questo livello emerge una
-proprietà non esplicitamente richiesta dai requisiti, ma che rappresenta un valore
-aggiunto in ottica di evoluzione futura. L'adozione dei bus come unico mezzo di
-coordinamento tra le connessioni rende possibile, in linea di principio, affiancare alla
-connessione \ac{MQTT} interna una seconda connessione che utilizzi un protocollo
-diverso, consentendo una transizione graduale verso un nuovo meccanismo di
-comunicazione interno senza dover modificare né le connessioni esterne né il nucleo del
-gateway.
+Come già osservato per l'architettura di sistema, anche a questo livello emerge una proprietà non esplicitamente richiesta dai requisiti, ma che rappresenta un valore aggiunto in ottica di evoluzione futura. L'adozione dei bus come unico mezzo di coordinamento tra le connessioni rende possibile, in linea di principio, affiancare alla connessione \ac{MQTT} interna una seconda connessione che utilizzi un protocollo diverso, consentendo una transizione graduale verso un nuovo meccanismo di comunicazione interno senza dover modificare né le connessioni esterne né il nucleo del gateway.
 %
 \subsection{Progettazione delle connessioni}
 \label{subsec:progettazione-delle-connessioni}
@@ -114,7 +67,7 @@ Nonostante il suo ruolo centrale, questa connessione è strutturalmente la più 
 \subsubsection{Connessione \ac{HTTP}}
 \label{subsubsec:connessione-http}
 %
-La connessione \ac{HTTP} espone le risorse del sistema attraverso un'interfaccia \\ \ac{REST}, organizzata attorno alle entità individuate in fase di analisi nella \cref{sec:modellazione-delle-entita}. Per ciascuna entità sono stati definiti due endpoint: uno in lettura, accessibile tramite il metodo \texttt{GET}, che restituisce il valore corrente della risorsa attingendo dalla cache, e uno in scrittura, accessibile tramite il metodo \texttt{PUT}, che consente a un client esterno di aggiornare lo stato di una risorsa pubblicando il nuovo valore sull'\textit{Inbound Bus}. È stato scelto \texttt{PUT} e non \texttt{POST}: \texttt{POST} implica convenzionalmente la creazione di una nuova risorsa, mentre \texttt{PUT} esprime l'aggiornamento di una risorsa già identificata dal suo \ac{URI}. Poiché le entità del sistema esistono indipendentemente dal gateway --- sono i robot e i moduli interni a definirne il ciclo di vita --- un'operazione di scrittura esterna non crea nulla, ma aggiorna un valore già presente nel dominio. L'uso di \texttt{PUT} riflette quindi in modo più preciso la semantica dell'operazione, e rimane valido anche nel caso in cui la risorsa non abbia ancora pubblicato alcun aggiornamento: il client la tratta comunque come una risorsa esistente di cui sta modificando lo stato. L'interfaccia esposta dalla connessione è documentata tramite uno schema \ac{OpenAPI}, che descrive in modo formale gli endpoint disponibili, i formati di input e output attesi e i codici di risposta previsti.
+La connessione \ac{HTTP} espone le risorse del sistema attraverso un'interfaccia \ac{REST}, organizzata attorno alle entità individuate in fase di analisi nella \cref{sec:modellazione-delle-entita}. Per ciascuna entità sono stati definiti due endpoint: uno in lettura, accessibile tramite il metodo \texttt{GET}, che restituisce il valore corrente della risorsa attingendo dalla cache, e uno in scrittura, accessibile tramite il metodo \texttt{PUT}, che consente a un client esterno di aggiornare lo stato di una risorsa pubblicando il nuovo valore sull'\textit{Inbound Bus}. È stato scelto \texttt{PUT} e non \texttt{POST}: \texttt{POST} implica convenzionalmente la creazione di una nuova risorsa, mentre \texttt{PUT} esprime l'aggiornamento di una risorsa già identificata dal suo \ac{URI}. Poiché le entità del sistema esistono indipendentemente dal gateway --- sono i robot e i moduli interni a definirne il ciclo di vita --- un'operazione di scrittura esterna non crea nulla, ma aggiorna un valore già presente nel dominio. L'uso di \texttt{PUT} riflette quindi in modo più preciso la semantica dell'operazione, e rimane valido anche nel caso in cui la risorsa non abbia ancora pubblicato alcun aggiornamento: il client la tratta comunque come una risorsa esistente di cui sta modificando lo stato. L'interfaccia esposta dalla connessione è documentata tramite uno schema \ac{OpenAPI}, che descrive in modo formale gli endpoint disponibili, i formati di input e output attesi e i codici di risposta previsti.
 %
 \subsubsection{Connessione \ac{CoAP}}
 \label{subsubsec:connessione-coap}
