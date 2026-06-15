@@ -79,7 +79,7 @@ Per il gateway, l'integrazione di Observe si traduce nel seguente comportamento:
 %
 \subsubsection{Connessione WebSocket}
 \label{subsubsec:connessione-websocket}
-
+%
 La progettazione della connessione basata su TCP ma event-based ha richiesto una riflessione più ampia rispetto alle altre. L'obiettivo era ottenere, per i client che comunicano tramite protocolli basati su \ac{TCP}, un meccanismo analogo a quello offerto dalla modalità Observe di \ac{CoAP}: la possibilità di ricevere aggiornamenti continui sulle risorse senza dover interrogare il sistema a ogni cambiamento. Prima di giungere alla scelta definitiva sono state valutate altre due alternative, descritte di seguito insieme alle ragioni che hanno portato a scartarle.
 
 \paragraph{Callback}
@@ -126,3 +126,4 @@ Il flusso di utilizzo è il seguente: il client invia una richiesta \texttt{POST
 Questa scelta architetturale è motivata da tre ragioni principali. In primo luogo, la \textit{separazione delle responsabilità}: REST è semanticamente adatto alla gestione del ciclo di vita delle risorse, mentre il canale WebSocket rimane dedicato esclusivamente al flusso di dati in tempo reale. In secondo luogo, l'\textit{idempotenza e affidabilità}: le richieste REST possono essere ritentate in caso di errore di rete senza ambiguità, laddove un messaggio di sottoscrizione perso sul canale WebSocket richiederebbe logica di retry e acknowledgment aggiuntiva. Infine, il \textit{disaccoppiamento dalla connessione}: la sottoscrizione viene creata indipendentemente dall'apertura del canale WebSocket, rendendo il processo di reconnessione trasparente --- il client riapre il canale e reinvia gli identificatori già noti, senza dover ricostruire lo stato delle sottoscrizioni.
 
 Questa architettura consente a un singolo client di gestire un numero arbitrario di sottoscrizioni su risorse diverse tramite un'unica connessione WebSocket, riducendo al minimo le risorse di rete impiegate e mantenendo piena bidirezionalità del canale.
+%
