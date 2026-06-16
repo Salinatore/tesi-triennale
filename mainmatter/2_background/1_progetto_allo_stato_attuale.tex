@@ -50,7 +50,7 @@ Il sistema realizzato, chiamato \textit{Emerge}, è composto da quattro moduli p
 descritto nel paragrafo precedente, realizzano concretamente le astrazioni
 architetturali proposte nel modello di riferimento: \texttt{EnvironmentProvider},
 \texttt{Orchestrator} ed \texttt{EnvironmentUpdate}. Ciascun modulo ha un ruolo
-ben definito e comunica con gli altri esclusivamente attraverso un broker MQTT
+ben definito e comunica con gli altri esclusivamente attraverso un broker \ac{MQTT}
 centralizzato (Mosquitto), che funge da unico bus di comunicazione dell'intero
 sistema. Questa scelta architetturale garantisce un disaccoppiamento naturale
 tra i componenti. Le connessioni tra i moduli
@@ -65,7 +65,7 @@ sono illustrate in \cref{fig:connections}.
     \label{fig:connections}
 \end{figure}
 
-Il modulo \texttt{aruco-detector}, scritto in Python con le librerie OpenCV e paho-mqtt, realizza il ruolo di \texttt{EnvironmentProvider}. Acquisisce in continuo il flusso video da una telecamera e individua i marker ArUco --- piccoli tag visivi stampati e applicati fisicamente su ciascun robot --- ricavando la posizione e l'orientamento di ogni robot nell'ambiente. I dati aggiornati vengono pubblicati sul broker MQTT al topic \texttt{robots/\{id\}/position}.
+Il modulo \texttt{aruco-detector}, scritto in Python con le librerie OpenCV e paho-mqtt, realizza il ruolo di \texttt{EnvironmentProvider}. Acquisisce in continuo il flusso video da una telecamera e individua i marker ArUco --- piccoli tag visivi stampati e applicati fisicamente su ciascun robot --- ricavando la posizione e l'orientamento di ogni robot nell'ambiente. I dati aggiornati vengono pubblicati sul broker \ac{MQTT} al topic \texttt{robots/\{id\}/position}.
 
 Il modulo \texttt{neighborhood-system}, anch'esso scritto in Python tramite Flask
 e \texttt{paho-mqtt}, contribuisce alla costruzione dell'ambiente computazionale
@@ -120,22 +120,22 @@ L'architettura di \textit{Emerge}, pur risultando efficace per gli obiettivi
 dimostrativi per cui è stata concepita, presenta alcuni vincoli strutturali che
 emergono direttamente dalle scelte implementative adottate.
 
-Il vincolo più pervasivo riguarda il broker MQTT, scelto in fase di sviluppo
+Il vincolo più pervasivo riguarda il broker \ac{MQTT}, scelto in fase di sviluppo
 per la sua semplicità come unico mezzo di comunicazione dell'intero sistema.
 Questa decisione ha conseguenze su tutti i livelli: non solo i moduli software
 si parlano esclusivamente tramite Mosquitto, ma anche i robot fisici devono
-obbligatoriamente supportare MQTT per poter partecipare allo sciame. Ne deriva
-che qualsiasi robot privo di un client MQTT nativo --- o che utilizzi un
+obbligatoriamente supportare \ac{MQTT} per poter partecipare allo sciame. Ne deriva
+che qualsiasi robot privo di un client \ac{MQTT} nativo --- o che utilizzi un
 protocollo di comunicazione diverso --- risulta di fatto incompatibile con il sistema senza interventi di
 adattamento. La varietà di protocolli oggi disponibili in ambito IoT rende
 questo un limite non trascurabile in ottica di estensibilità.
 
 Un caso particolare è rappresentato dalla \texttt{dashboard}: poiché i browser
-non consentono connessioni TCP dirette verso broker MQTT arbitrari, il modulo
+non consentono connessioni TCP dirette verso broker \ac{MQTT} arbitrari, il modulo
 ricorre a \textbf{MQTT over WebSocket} (porta 9001), che incapsula i messaggi
-MQTT all'interno di una connessione WebSocket. Il meccanismo funziona, ma
+\ac{MQTT} all'interno di una connessione WebSocket. Il meccanismo funziona, ma
 introduce un livello di wrapping aggiuntivo che conferma come anche il
-componente di interfaccia sia vincolato al paradigma MQTT, seppur con un
+componente di interfaccia sia vincolato al paradigma \ac{MQTT}, seppur con un
 trasporto differente.
 
 Come nota finale, la localizzazione dei robot dipende interamente dalla presenza di
