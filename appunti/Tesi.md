@@ -1,4 +1,4 @@
-Constesto generale:
+Contesto generale:
 Scrittura di documento di tesi triennale. Prima della tesi ho svolto un tirocinio in cui ho preso un progetto preesistente e ho creato un modulo aggiuntivo aumentarne le capacità. Nella mia tesi devo descrivere tutto il lavoro svolto durante il tirocinio. Il progetto preesistente di cui parlo riguarda la demo, per l'argomento di aggregate computing, mostrato dal gruppo di ricerca dove ho fatto tirocinio durante la notte europea dei ricercatori.
 
 ## Indice
@@ -57,7 +57,3 @@ Scrittura di documento di tesi triennale. Prima della tesi ho svolto un tirocini
   precedenti; non citare lo stesso paper più volte per ogni singolo concetto,
   ma una volta sola nel punto più naturale
 - Testo: senza line break manuali nel sorgente
-
-How to define acronyms:
-\acrodef{IoT}{Internet of Thing}
-\acrodef{vm}[VM]{Virtual Machine}
