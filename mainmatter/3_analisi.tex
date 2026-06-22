@@ -8,7 +8,7 @@ Il capitolo precedente ha messo in luce i limiti strutturali del sistema \textit
 %
 L'obiettivo generale è stato quindi rendere il sistema \textbf{protocol-agnostic}: ridurre, cioè, il grado di accoppiamento rispetto a un singolo protocollo, aprendo la possibilità di integrare robot e client che utilizzino protocolli di comunicazione eterogenei senza dover modificare il nucleo del sistema.
 
-Un aspetto centrale emerso durante lo studio del problema è stata la distinzione tra due mondi distinti: quello interno al sistema, composto dai moduli già esistenti e dai robot che comunicano tramite \ac{MQTT}, e quello esterno, composto da client non ancora integrati o gestiti in modo non ottimale --- come la dashboard, che ricorre a \ac{MQTT} over WebSocket per aggirare i limiti del browser --- e da robot futuri che potrebbero non supportare \ac{MQTT}. Da qui, l'obiettivo già enunciato si è declinato nel rendere il protocollo interno indipendente da quelli usati per comunicare con l'esterno, in modo che il sistema potesse supportare client e dispositivi futuri senza che questi fossero vincolati a \ac{MQTT}.
+Un aspetto centrale emerso durante lo studio del problema è stata la distinzione tra due mondi distinti: quello interno al sistema, composto dai moduli già esistenti e dai robot che comunicano tramite \ac{MQTT}, e quello esterno, composto da client non ancora integrati o gestiti in modo non ottimale -- come la dashboard, che ricorre a \ac{MQTT} over WebSocket per aggirare i limiti del browser -- e da robot futuri che potrebbero non supportare \ac{MQTT}. Da qui, l'obiettivo già enunciato si è declinato nel rendere il protocollo interno indipendente da quelli usati per comunicare con l'esterno, in modo che il sistema potesse supportare client e dispositivi futuri senza che questi fossero vincolati a \ac{MQTT}.
 %
 \section{Vincoli}
 \label{sec:vincoli}
@@ -55,7 +55,7 @@ Il risultato di questa fase è sintetizzato nello schema in \cref{fig:entita}, c
 
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{figures/analisi/entità.png}
+    \includegraphics[width=\linewidth]{figures/analisi/entità.pdf}
     \caption{Schema delle entità di dominio.}
     \label{fig:entita}
 \end{figure}

@@ -9,19 +9,15 @@ Conclusa la fase di progettazione, questo capitolo descrive come le scelte archi
 Definita l'architettura del gateway nei suoi elementi essenziali, questa sezione ne descrive la realizzazione concreta: il linguaggio e gli strumenti adottati, le librerie su cui si appoggiano le singole connessioni, e il modo in cui il codice è organizzato.
 
 \paragraph{Linguaggio e gestione delle dipendenze}
-
 Il gateway è stato sviluppato in Python 3.13, scelto per il supporto nativo ad \texttt{asyncio}. Trattandosi di un componente la cui natura è quasi interamente di I/O -- richieste \ac{HTTP}, sessioni WebSocket, datagrammi \ac{CoAP} e le due direzioni della connessione \ac{MQTT} -- un modello a singolo processo e singolo event loop, in cui ogni operazione di rete è una coroutine concorrente, è risultato ideale a soddisfare il requisito di responsività sotto carico senza dover introdurre concorrenza basata su thread o processi multipli, i quali avrebbero aumentato notevolmente la complessità della soluzione. La gestione delle dipendenze e del processo di build è affidata a \texttt{uv}, scelto principalmente per la sua velocità.
 
 \paragraph{Librerie principali}
-
 Attorno a Python gravitano poche librerie, ciascuna responsabile di un solo protocollo o di una sola responsabilità trasversale. FastAPI è stata scelta per le connessioni \ac{HTTP} e WebSocket poiché le supporta entrambe all'interno della stessa applicazione \ac{ASGI}, eseguita tramite il server Uvicorn, generando automaticamente la documentazione \ac{OpenAPI} prevista in fase di progettazione direttamente dalle firme dei router e dai modelli Pydantic, e offrendo un meccanismo di dependency injection -- riutilizzato per il controllo di salute descritto più avanti -- senza richiedere codice aggiuntivo. Per \ac{CoAP} è stata adottata \texttt{aiocoap}, l'implementazione asincrona più matura disponibile per Python, capace di fornire supporto nativo alla modalità Observe. La connessione \ac{MQTT} si appoggia su \texttt{aiomqtt}, un wrapper asincrono attorno al client \texttt{paho-mqtt} che ne espone l'interfaccia tramite \texttt{async}/\texttt{await} invece che tramite callback, rendendola coerente con il resto della base di codice. Pydantic, infine, attraversa trasversalmente tutte le connessioni: ogni entità del modello di dominio definito in fase di analisi è un modello Pydantic, usato sia per validare e serializzare i payload \ac{MQTT} sia per i corpi delle richieste \ac{HTTP}, i frame WebSocket e i payload \ac{CoAP}, costituendo un'unica fonte di verità per lo schema dei dati indipendentemente dal protocollo con cui transitano.
 
 \paragraph{Containerizzazione e configurazione}
-
 Il gateway viene distribuito tramite un'immagine Docker costruita in due fasi: una fase di build, in cui \texttt{uv} installa le dipendenze bloccate dal lock file e l'interprete Python pinnato, e una fase finale, basata su un'immagine Debian minimale ed eseguita da un utente non privilegiato, che si limita a copiare l'ambiente virtuale già pronto. Il Dockerfile documenta le porte associate ai protocolli di rete coinvolti, in particolare quella su cui è presente il server \ac{ASGI} che ospita le connessioni \ac{HTTP} e WebSocket e quella \ac{UDP} per il server \ac{CoAP}. La configurazione -- l'indirizzo del broker \ac{MQTT} e, opzionalmente, l'indirizzo su cui deve essere avviato il server \ac{CoAP} -- è esternalizzata tramite variabili d'ambiente o file \texttt{.env}, letta da una classe di impostazioni basata su Pydantic; quest'ultima opzione si è rivelata necessaria perché \texttt{aiocoap} non è in grado di effettuare il bind predefinito su macOS, e va quindi sovrascritta manualmente in quell'ambiente.
 
 \paragraph{Organizzazione dei moduli}
-
 Prima di descrivere nel dettaglio le singole decisioni implementative, è utile delineare brevemente il contesto generale: il pacchetto principale si articola in tre rami, oltre al file \texttt{main}.
 
 \begin{itemize}
@@ -54,7 +50,7 @@ L'ultimo componente del nucleo, \texttt{HealthMonitor}, nasce dall'esigenza di e
 \label{subsec:implementazione-delle-connessioni}
 %
 Questa parte descrive come le connessioni progettate in \cref{subsec:progettazione-delle-connessioni} sono state concretamente implementate. Prima di addentrarsi nel dettaglio delle singole connessioni, viene illustrato lo schema generale che ne accomuna l'organizzazione del codice, comune a tutti i protocolli; seguono poi, in altrettanti paragrafi dedicati, le scelte implementative specifiche di \ac{MQTT}, \ac{HTTP}, \ac{CoAP} e WebSocket.
-%
+
 \paragraph{Schema generale}
 Il pacchetto \texttt{/connections} rispecchia direttamente la distinzione discussa in \cref{sec:architetturale-rispetto-al-sistema} tra connessioni interne ed esterne: si articola in due sotto-pacchetti, \texttt{externals} e \texttt{internals}, ciascuno contenente la propria classe composita (\texttt{ExternalConnections} e \texttt{InternalConnections}, già descritte nella sezione precedente) e una cartella \texttt{connections/} in cui risiede l'implementazione di ciascun protocollo. All'interno di ciascuna di queste cartelle, ogni protocollo occupa un proprio sotto-pacchetto autonomo (\texttt{mqtt/}, \texttt{http/}, \texttt{coap/}, \texttt{websocket/}), composto da un file \texttt{connection.py} --- che contiene la sottoclasse di \texttt{Connection} e ne rappresenta il punto di ingresso --- ed eventuali cartelle \texttt{routers/}, \texttt{models/} o \texttt{resources/} proprie del protocollo. Questa simmetria nella struttura delle cartelle rende immediatamente riconoscibile, a chiunque esplori il codice, dove cercare l'implementazione di un dato protocollo, e mantiene indipendenti i sotto-pacchetti.
 

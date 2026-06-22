@@ -19,9 +19,9 @@ Oltre agli aspetti tecnici, il progetto aveva anche una finalità divulgativa: r
 %
 Il sistema realizzato, chiamato \textit{Emerge}, è composto da quattro moduli principali che realizzano concretamente le astrazioni architetturali proposte nel modello di riferimento: \texttt{EnvironmentProvider}, \texttt{Orchestrator} ed \texttt{EnvironmentUpdate}. Ciascun modulo ha un ruolo ben definito e comunica con gli altri esclusivamente attraverso un broker \ac{MQTT} centralizzato (Mosquitto), che funge da unico bus di comunicazione dell'intero sistema. Questa scelta architetturale garantisce un disaccoppiamento naturale tra i componenti. Le connessioni tra i moduli sono illustrate in \cref{fig:connections}.
 
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{figures/background/connections_at_the_start.png}
+    \includegraphics[width=\linewidth]{figures/background/connections.pdf}
     \caption{Connessioni tra i moduli del sistema Emerge nella versione iniziale. Le frecce indicano il flusso dei messaggi MQTT (PUB/SUB) e le chiamate HTTP verso il \texttt{neighborhood-system}.}
     \label{fig:connections}
 \end{figure}
@@ -39,7 +39,7 @@ Infine, il modulo \texttt{dashboard}, sviluppato in React e TypeScript, fornisce
 %
 L''architettura di \textit{Emerge}, pur risultando efficace per gli obiettivi dimostrativi per cui è stata concepita, presenta alcuni vincoli strutturali che emergono direttamente dalle scelte implementative adottate.
 
-Il vincolo più pervasivo riguarda il broker \ac{MQTT}, scelto in fase di sviluppo per la sua semplicità come unico mezzo di comunicazione dell'intero sistema. Questa decisione ha conseguenze su tutti i livelli: non solo i moduli software si parlano esclusivamente tramite Mosquitto, ma anche i robot fisici devono obbligatoriamente supportare \ac{MQTT} per poter partecipare allo sciame. Ne deriva che qualsiasi robot privo di un client \ac{MQTT} nativo --- o che utilizzi un protocollo di comunicazione diverso --- risulta di fatto incompatibile con il sistema senza interventi di adattamento. La varietà di protocolli oggi disponibili in ambito IoT rende questo un limite non trascurabile in ottica di estensibilità.
+Il vincolo più pervasivo riguarda il broker \ac{MQTT}, scelto in fase di sviluppo per la sua semplicità come unico mezzo di comunicazione dell'intero sistema. Questa decisione ha conseguenze su tutti i livelli: non solo i moduli software si parlano esclusivamente tramite Mosquitto, ma anche i robot fisici devono obbligatoriamente supportare \ac{MQTT} per poter partecipare allo sciame. Ne deriva che qualsiasi robot privo di un client \ac{MQTT} nativo -- o che utilizzi un protocollo di comunicazione diverso -- risulta di fatto incompatibile con il sistema senza interventi di adattamento. La varietà di protocolli oggi disponibili in ambito IoT rende questo un limite non trascurabile in ottica di estensibilità.
 
 Un caso particolare è rappresentato dalla \texttt{dashboard}: poiché i browser non consentono connessioni TCP dirette verso broker \ac{MQTT} arbitrari, il modulo ricorre a \textbf{MQTT over WebSocket} (porta 9001), che incapsula i messaggi \ac{MQTT} all'interno di una connessione WebSocket. Il meccanismo funziona, ma introduce un livello di wrapping aggiuntivo che conferma come anche il componente di interfaccia sia vincolato al paradigma \ac{MQTT}, seppur con un trasporto differente.
 
