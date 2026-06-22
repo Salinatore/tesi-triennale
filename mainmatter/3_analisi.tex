@@ -1,10 +1,12 @@
 \chapter{Analisi}
 \label{chap:analisi}
 %
+Il capitolo precedente ha messo in luce i limiti strutturali del sistema \textit{Emerge}, in particolare la sua rigida dipendenza dal protocollo \ac{MQTT}. In questo capitolo tali limiti vengono tradotti in un problema di progettazione: si definiscono dapprima l'obiettivo generale del lavoro (\cref{sec:obiettivi}) e i vincoli entro cui esso deve essere perseguito (\cref{sec:vincoli}); se ne derivano poi i requisiti funzionali e non funzionali (\cref{sec:requisiti}); infine si presenta il modello di dominio che fungerà da riferimento per le scelte progettuali del capitolo successivo (\cref{sec:modellazione-delle-entita}).
+%
 \section{Obiettivi}
 \label{sec:obiettivi}
 %
-Il lavoro descritto in questa tesi nasce dall'analisi dei limiti strutturali emersi nella sezione precedente, in particolare dalla dipendenza dell'intero sistema \textit{Emerge} dal protocollo \ac{MQTT} come unico mezzo di comunicazione. L'obiettivo generale è stato quindi rendere il sistema \textbf{protocol-agnostic}: ridurre, cioè, il grado di accoppiamento rispetto a un singolo protocollo, aprendo la possibilità di integrare robot e client che utilizzino protocolli di comunicazione eterogenei senza dover modificare il nucleo del sistema.
+L'obiettivo generale è stato quindi rendere il sistema \textbf{protocol-agnostic}: ridurre, cioè, il grado di accoppiamento rispetto a un singolo protocollo, aprendo la possibilità di integrare robot e client che utilizzino protocolli di comunicazione eterogenei senza dover modificare il nucleo del sistema.
 
 Un aspetto centrale emerso durante lo studio del problema è stata la distinzione tra due mondi distinti: quello interno al sistema, composto dai moduli già esistenti e dai robot che comunicano tramite \ac{MQTT}, e quello esterno, composto da client non ancora integrati o gestiti in modo non ottimale --- come la dashboard, che ricorre a \ac{MQTT} over WebSocket per aggirare i limiti del browser --- e da robot futuri che potrebbero non supportare \ac{MQTT}. Da qui, l'obiettivo già enunciato si è declinato nel rendere il protocollo interno indipendente da quelli usati per comunicare con l'esterno, in modo che il sistema potesse supportare client e dispositivi futuri senza che questi fossero vincolati a \ac{MQTT}.
 %
@@ -16,6 +18,8 @@ Il secondo vincolo, strettamente connesso al primo, riguardava il broker \ac{MQT
 %
 \section{Requisiti}
 \label{sec:requisiti}
+%
+Il capitolo precedente ha messo in luce i limiti strutturali del sistema \textit{Emerge}, in particolare la sua rigida dipendenza dal protocollo \ac{MQTT}. In questo capitolo tali limiti vengono tradotti in un problema di progettazione: si definiscono dapprima l'obiettivo generale del lavoro (\cref{sec:obiettivi}) e i vincoli entro cui esso deve essere perseguito (\cref{sec:vincoli}); se ne derivano poi i requisiti funzionali e non funzionali (\cref{sec:requisiti}); infine si presenta il modello di dominio che fungerà da riferimento per le scelte progettuali del capitolo successivo (\cref{sec:modellazione-delle-entita}).I requisiti individuati si articolano su due livelli: funzionali, relativi alle capacità che il sistema deve offrire, e non funzionali, relativi alle qualità con cui tali capacità devono essere garantite. A questi si affianca un'analisi dei profili dei client che il sistema dovrà servire, utile a guidare le scelte progettuali successive.
 %
 \subsection{Requisiti funzionali}
 \label{subsec:requisiti-funzionali}
