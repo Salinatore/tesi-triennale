@@ -1,7 +1,7 @@
-\section{Progetto allo stato attuale}
+\section{Project Emerge}
 \label{sec:progetto-allo-stato-attuale}
 %
-La sezione precedente ha introdotto i fondamenti teorici dell'aggregate computing, illustrando il paradigma e i framework -- \textit{ScaFi} e \textit{FCPP} -- su cui esso si basa. Questa sezione ne presenta l'applicazione concreta nel sistema \textit{Emerge}, il dimostratore realizzato dal gruppo di ricerca e punto di partenza del lavoro di tirocinio descritto in questa tesi: si illustrano dapprima l'obiettivo che ne ha guidato lo sviluppo (\cref{subsec:obbiettivo}), quindi l'architettura attraverso cui tale obiettivo è stato realizzato (\cref{subsec:archiettura-e-funzionamento}); infine si analizzano i vincoli strutturali emersi da queste scelte progettuali (\cref{subsec:vincoli}), che costituiscono il punto di partenza per l'analisi presentata nel capitolo successivo.
+Questa sezione presenta l'applicazione concreta di Aggregate Computing nel sistema \textit{Emerge}, il dimostratore realizzato dal gruppo di ricerca e punto di partenza del lavoro di tirocinio descritto in questa tesi: si illustrano dapprima l'obiettivo che ne ha guidato lo sviluppo (\cref{subsec:obbiettivo}), quindi l'architettura attraverso cui tale obiettivo è stato realizzato (\cref{subsec:archiettura-e-funzionamento}); infine si analizzano i vincoli strutturali emersi da queste scelte progettuali (\cref{subsec:vincoli}), che costituiscono il punto di partenza per l'analisi presentata nel capitolo successivo.
 %
 \subsection{Obiettivo}
 \label{subsec:obbiettivo}
@@ -37,10 +37,10 @@ Infine, il modulo \texttt{dashboard}, sviluppato in React e TypeScript, fornisce
 \subsection{Vincoli}
 \label{subsec:vincoli}
 %
-L''architettura di \textit{Emerge}, pur risultando efficace per gli obiettivi dimostrativi per cui è stata concepita, presenta alcuni vincoli strutturali che emergono direttamente dalle scelte implementative adottate.
+L'architettura di \textit{Emerge}, pur risultando efficace per gli obiettivi dimostrativi per cui è stata concepita, presenta alcuni vincoli strutturali che emergono direttamente dalle scelte implementative adottate.
 
 Il vincolo più pervasivo riguarda il broker \ac{MQTT}, scelto in fase di sviluppo per la sua semplicità come unico mezzo di comunicazione dell'intero sistema. Questa decisione ha conseguenze su tutti i livelli: non solo i moduli software si parlano esclusivamente tramite Mosquitto, ma anche i robot fisici devono obbligatoriamente supportare \ac{MQTT} per poter partecipare allo sciame. Ne deriva che qualsiasi robot privo di un client \ac{MQTT} nativo -- o che utilizzi un protocollo di comunicazione diverso -- risulta di fatto incompatibile con il sistema senza interventi di adattamento. La varietà di protocolli oggi disponibili in ambito IoT rende questo un limite non trascurabile in ottica di estensibilità.
 
 Un caso particolare è rappresentato dalla \texttt{dashboard}: poiché i browser non consentono connessioni TCP dirette verso broker \ac{MQTT} arbitrari, il modulo ricorre a \textbf{MQTT over WebSocket} (porta 9001), che incapsula i messaggi \ac{MQTT} all'interno di una connessione WebSocket. Il meccanismo funziona, ma introduce un livello di wrapping aggiuntivo che conferma come anche il componente di interfaccia sia vincolato al paradigma \ac{MQTT}, seppur con un trasporto differente.
 
-Vale infine la pena osservare che, la localizzazione dei robot dipende interamente dalla presenza di marker ArUco fisici e dalla visibilità della telecamera: un robot non dotato di tali marker non può essere percepito dal sistema, indipendentemente da come comunica.
+La localizzazione dei robot dipende interamente dalla presenza di marker ArUco fisici e dalla visibilità della telecamera: un robot non dotato di tali marker non può essere percepito dal sistema, indipendentemente da come comunica.

@@ -6,7 +6,7 @@ Definiti nel capitolo precedente l'obiettivo, i vincoli e il modello di dominio 
 \section{Architettura rispetto al sistema}
 \label{sec:architetturale-rispetto-al-sistema}
 %
-Come anticipato nella \cref{sec:obiettivi}, un requisito trasversale all'intera soluzione era la necessità di separare nettamente il mondo interno del sistema da quello esterno: da un lato i moduli già sviluppati e i robot che comunicano tramite \ac{MQTT}, dall'altro i client che avrebbero dovuto accedere alle stesse risorse attraverso protocolli eterogenei. Qualsiasi soluzione che non avesse rispettato questa separazione avrebbe rischiato di far collidere i due mondi, costringendo a modificare i moduli esistenti ogniqualvolta fosse necessario aggiungere o cambiare un protocollo esterno.
+In sezione \cref{sec:obiettivi} è stato introdotto un requisito trasversale all'intera soluzione, ovvero la necessità di separare nettamente il mondo interno del sistema da quello esterno: da un lato i moduli già sviluppati e i robot che comunicano tramite \ac{MQTT}, dall'altro i client che avrebbero dovuto accedere alle stesse risorse attraverso protocolli eterogenei. Qualsiasi soluzione che non avesse rispettato questa separazione avrebbe causato interferenze, costringendo a modificare i moduli esistenti ogniqualvolta fosse necessario aggiungere o cambiare un protocollo esterno.
 
 Tenuto conto del vincolo di non modificabilità dei moduli già sviluppati, illustrato nella \cref{sec:vincoli}, la struttura generale della soluzione si è delineata in modo abbastanza naturale: era sufficiente introdurre un unico modulo aggiuntivo che si frapponesse tra l'interno e l'esterno del sistema, fungendo da punto di mediazione tra il broker \ac{MQTT} interno e i client esterni. Questo modulo avrebbe assorbito tutta la complessità legata alla molteplicità dei protocolli, lasciando invariato il comportamento degli altri componenti del sistema.
 
@@ -14,16 +14,16 @@ La scelta di concentrare questa responsabilità in un singolo modulo dedicato po
 
 La soluzione adottata prende il nome di \textit{domain gateway}: un componente che si colloca al confine tra il sistema interno e il mondo esterno, traducendo i messaggi da un protocollo all'altro e mantenendo disaccoppiati i due lati. Nella \cref{fig:architettura-sistema} è rappresentata l'architettura risultante a livello di sistema: il gateway si connette al broker \ac{MQTT} interno come qualsiasi altro modulo, sottoscrive i topic di interesse e pubblica gli aggiornamenti ricevuti verso i client esterni attraverso i protocolli da esso esposti; in direzione opposta, i messaggi provenienti dall'esterno vengono tradotti e pubblicati sul broker interno, rendendoli accessibili ai moduli già esistenti senza che questi debbano essere a conoscenza della provenienza.
 
-\begin{figure}
+\begin{figure}[t]
     \centering
-    \includegraphics[width=\linewidth]{figures/progettazione/Archiettura sistema.pdf}
+    \includegraphics[width=\linewidth]{figures/progettazione/archiettura-sistema.pdf}
     \caption{Architettura del sistema con l'introduzione del gateway. I componenti evidenziati in blu rappresentano le aggiunte introdotte.}
     \label{fig:architettura-sistema}
 \end{figure}
 
 Questa scelta rispetta pienamente i vincoli definiti in fase di analisi: il broker \ac{MQTT} interno rimane invariato nel suo ruolo di mezzo di comunicazione tra i moduli esistenti, e nessuno di questi richiede modifiche. Al contempo, l'architettura soddisfa il requisito di estendibilità: aggiungere in futuro il supporto a un nuovo protocollo significa intervenire esclusivamente sul gateway, senza che il resto del sistema ne sia coinvolto.
 
-Vale la pena osservare che il disaccoppiamento introdotto dal gateway opera in entrambe le direzioni. Se da un lato isola i client esterni dal protocollo interno, dall'altro isola i moduli interni dai protocolli esposti verso l'esterno. Ne consegue che, qualora in futuro si decidesse di sostituire \ac{MQTT} con un meccanismo di comunicazione interno diverso, l'intervento rimarrebbe confinato al gateway: i client esterni continuerebbero a interagire con le stesse interfacce senza alcuna modifica, esattamente come accade per i moduli interni. Questa simmetria non era un obiettivo esplicito del progetto -- il requisito era superare la dipendenza verso l'esterno, non eliminare \ac{MQTT} -- ma emerge come proprietà naturale dell'architettura scelta, e rappresenta un valore aggiunto in ottica di evoluzione futura del sistema.
+Il disaccoppiamento introdotto dal gateway opera in entrambe le direzioni. Se da un lato isola i client esterni dal protocollo interno, dall'altro isola i moduli interni dai protocolli esposti verso l'esterno. Ne consegue che, qualora in futuro si decidesse di sostituire \ac{MQTT} con un meccanismo di comunicazione interno diverso, l'intervento rimarrebbe confinato al gateway: i client esterni continuerebbero a interagire con le stesse interfacce senza alcuna modifica, esattamente come accade per i moduli interni. Questa simmetria non era un obiettivo esplicito del progetto -- il requisito era superare la dipendenza verso l'esterno, non eliminare \ac{MQTT} -- ma emerge come proprietà naturale dell'architettura scelta, e rappresenta un valore aggiunto in ottica di evoluzione futura del sistema.
 
 Definita l'architettura a livello di sistema, rimane da chiarire un aspetto che emerge direttamente dai requisiti funzionali: il gateway deve essere in grado di supportare sia client con un modello di interazione a notifica continua, analoga al publish/subscribe interno, sia client che interrogano le risorse in modo puntuale secondo un modello request/response. Per i protocolli event-driven il gateway si comporta semplicemente come traduttore: ogni aggiornamento ricevuto dal broker interno viene inoltrato ai client sottoscritti senza ulteriore logica. Per i protocolli request/response la situazione è diversa: quando un client richiede il valore corrente di una risorsa, il gateway deve essere in grado di rispondere immediatamente, indipendentemente dal momento in cui l'ultimo aggiornamento è stato pubblicato sul broker. Questo rende necessaria la presenza di una cache che mantenga l'ultimo valore noto per ciascuna risorsa, dalla quale il gateway possa attingere al momento della richiesta.
 
@@ -40,15 +40,15 @@ Le connessioni sono sotto-moduli del gateway, ciascuno responsabile della gestio
 
 I bus sono i canali attraverso cui le connessioni si scambiano messaggi senza conoscersi direttamente. Ne sono stati definiti due: l'\textit{Inbound Bus}, che trasporta i messaggi provenienti dall'esterno verso la connessione interna responsabile di pubblicarli sul broker \ac{MQTT}, e l'\textit{Outbound Bus}, che trasporta gli aggiornamenti ricevuti dal broker verso tutte le connessioni esterne interessate. Tramite dependency injection, entrambi i bus vengono passati a ciascuna connessione al momento dell'inizializzazione: ogni connessione può pubblicare messaggi su un bus oppure iscriversi a esso, ricevendo una callback ogni volta che un altro componente vi pubblica. In questo modo il gateway opera come una rete di componenti disaccoppiati, coordinati esclusivamente attraverso i due canali condivisi.
 
-Vale la pena osservare che il modello a bus non offre garanzie di consegna verso i singoli subscriber: un messaggio pubblicato viene considerato recapitato non appena è in transito sul canale, indipendentemente dal fatto che una connessione specifica lo abbia effettivamente ricevuto e processato. Questa caratteristica rende l'architettura naturalmente orientata a un modello fire-and-forget, che risulta coerente con la semantica di \ac{MQTT} e dei protocolli event-driven in generale, ma che è opportuno tenere presente qualora in futuro si volessero esporre interfacce con garanzie di consegna più stringenti.
+Il modello a bus non offre garanzie di consegna verso i singoli subscriber: un messaggio pubblicato viene considerato recapitato non appena è in transito sul canale, indipendentemente dal fatto che una connessione specifica lo abbia effettivamente ricevuto e processato. Questa caratteristica rende l'architettura naturalmente orientata a un modello fire-and-forget, che risulta coerente con la semantica di \ac{MQTT} e dei protocolli event-driven in generale, ma che è opportuno tenere presente qualora in futuro si volessero esporre interfacce con garanzie di consegna più stringenti.
 
 Introdotti i bus, l'inserimento della cache si ricava in modo naturale dall'architettura già definita. Come discusso nella \cref{sec:architetturale-rispetto-al-sistema}, i protocolli request/response richiedono che il gateway possa rispondere immediatamente al valore corrente di una risorsa, indipendentemente da quando è stato pubblicato l'ultimo aggiornamento. A tale scopo, la cache si iscrive all'\textit{Outbound Bus} e aggiorna la propria snapshot a ogni messaggio in transito, costruendo una visione coerente dello stato del sistema. Come le connessioni, anche la cache viene passata tramite dependency injection ai soli sotto-moduli che la richiedono, ovvero quelli che implementano protocolli request/response.
 
 Un aspetto rilevante riguarda il momento in cui un messaggio viene considerato valido ai fini della cache. Quando un client esterno pubblica un aggiornamento tramite una qualsiasi interfaccia del gateway, il valore non viene registrato immediatamente: il messaggio percorre prima l'\textit{Inbound Bus}, viene pubblicato sul broker \ac{MQTT} dalla connessione interna, e solo dopo che il broker lo ha ritrasmesso al gateway stesso -- come farebbe con qualsiasi altro subscriber -- esso transita sull'\textit{Outbound Bus} e viene acquisito dalla cache. Questa scelta garantisce che i valori memorizzati siano sempre quelli effettivamente visibili agli altri moduli del sistema, e non stati intermedi non ancora confermati. Nella \cref{fig:architettura-gateway} è riportata una rappresentazione schematica di questa struttura.
 
-\begin{figure}
+\begin{figure}[t]
     \centering
-    \includegraphics[width=\linewidth]{figures/progettazione/System Architetture.pdf}
+    \includegraphics[width=\linewidth]{figures/progettazione/archiettura-sistema-interno.pdf}
     \caption{Architettura interna del gateway: connessioni, bus e cache.}
     \label{fig:architettura-gateway}
 \end{figure}
@@ -83,31 +83,31 @@ Rispetto a \ac{HTTP}, tuttavia, \ac{CoAP} offre un meccanismo aggiuntivo che ris
 %
 La progettazione della connessione basata su TCP ma event-based ha richiesto una riflessione più ampia rispetto alle altre. L'obiettivo era ottenere, per i client che comunicano tramite protocolli basati su \ac{TCP}, un meccanismo analogo a quello offerto dalla modalità Observe di \ac{CoAP}: la possibilità di ricevere aggiornamenti continui sulle risorse senza dover interrogare il sistema a ogni cambiamento. Prima di giungere alla scelta definitiva sono state valutate altre due alternative, descritte di seguito insieme alle ragioni che hanno portato a scartarle.
 
-\paragraph{Callback}
+\paragraph{Callback.}
 Il meccanismo delle callback prevede che il client, al momento della sottoscrizione a una risorsa, fornisca al gateway un \ac{URI} a cui inviare le notifiche. Il gateway, a ogni aggiornamento, effettua una richiesta \ac{HTTP} verso quell'indirizzo, trasportando il nuovo valore come payload. Lo schema di interazione è illustrato nella \cref{fig:seq-callback}.
 
-\begin{figure}
+\begin{figure} [t]
     \centering
-    \includegraphics[width=\linewidth]{figures/progettazione/callback.pdf}
+    \includegraphics[width=0.7\linewidth]{figures/progettazione/callback.pdf}
     \caption{Diagramma di sequenza del meccanismo a callback. Gli aggiornamenti non sono sincroni. Gli aggiornamenti lato client non sono riportati, poiché equivarrebbero a una semplice chiamata \ac{HTTP}.}
     \label{fig:seq-callback}
 \end{figure}
 
 Questa soluzione è stata rapidamente esclusa per due ragioni principali. In primo luogo, avrebbe richiesto che ogni client esponga a sua volta un server \ac{HTTP} raggiungibile dal gateway: un requisito che esclude dispositivi con risorse limitate, come alcuni robot dell'ecosistema IoT di riferimento, e impone un onere architetturale significativo su tutti i client. In secondo luogo, ogni notifica comporta la creazione di una nuova connessione \ac{TCP}, poiché le richieste \ac{HTTP} tradizionali non sono persistenti: in un sistema IoT in cui gli aggiornamenti possono essere frequenti e numerosi, l'overhead derivante dall'apertura e chiusura continua di connessioni risulta inaccettabile sia lato gateway che lato client.
 
-\paragraph{Server-Sent Events}
+\paragraph{Server-Sent Events.}
 I \ac{SSE} rappresentano un'alternativa più adatta al contesto: il client apre una connessione \ac{HTTP} persistente verso il gateway e riceve gli aggiornamenti in modo unidirezionale, senza dover esporre alcun endpoint. Il server può inviare eventi in qualsiasi momento lungo lo stesso canale già aperto, eliminando il problema della creazione ripetuta di connessioni. Lo schema di interazione è illustrato nella \cref{fig:seq-sse}.
 
-\begin{figure}
+\begin{figure} [t]
     \centering
-    \includegraphics[width=\linewidth]{figures/progettazione/sse.pdf}
+    \includegraphics[width=0.7\linewidth]{figures/progettazione/sse.pdf}
     \caption{Diagramma di sequenza del meccanismo a Server-Sent Events. Come per il caso precedente, gli aggiornamenti non sono sincroni e quelli lato client non sono riportati.}
     \label{fig:seq-sse}
 \end{figure}
 
 Un ulteriore vantaggio di questa soluzione sarebbe stata la sua somiglianza con l'interfaccia \ac{CoAP} già descritta: le due connessioni avrebbero condiviso una semantica di utilizzo pressoché identica. Nonostante questi pregi, anche questa strada è stata abbandonata per due motivi strettamente correlati. Il primo riguarda la gestione delle sottoscrizioni a risorse multiple: un client che avesse voluto ricevere aggiornamenti su più risorse contemporaneamente sarebbe stato costretto a mantenere una connessione \ac{HTTP} persistente distinta per ciascuna di esse, con un dispendio di risorse proporzionale al numero di risorse osservate. Il secondo motivo riguarda la direzione di scrittura: i \ac{SSE} sono intrinsecamente unidirezionali, quindi ogni aggiornamento che il client avesse voluto inviare al sistema avrebbe richiesto comunque l'apertura di una nuova connessione \ac{HTTP}, ricorrendo all'endpoint \texttt{PUT} della connessione \ac{HTTP} già descritta nella \cref{subsubsec:connessione-http}. La combinazione di queste due limitazioni porta a una proliferazione di connessioni parallele non strettamente necessarie.
 
-\paragraph{WebSocket}
+\paragraph{WebSocket.}
 Per superare entrambe le limitazioni dei \ac{SSE}, si è scelto di adottare WebSocket, un protocollo che stabilisce un canale bidirezionale full-duplex su un'unica connessione \ac{TCP} persistente. Su questo canale transitano sia i messaggi inviati dal client verso il sistema sia le notifiche inviate dal gateway verso il client, relative alle risorse di interesse. Lo schema di interazione è illustrato nella \cref{fig:seq-websocket}.
 
 \begin{figure}

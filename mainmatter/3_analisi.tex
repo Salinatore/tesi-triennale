@@ -12,9 +12,9 @@ Un aspetto centrale emerso durante lo studio del problema è stata la distinzion
 %
 \section{Vincoli}
 \label{sec:vincoli}
-Il contesto in cui si è operato imponeva due vincoli principali. Il primo riguardava la non modificabilità dei moduli già sviluppati: qualsiasi intervento che avesse richiesto di riscrivere o alterare il comportamento dei componenti esistenti era da considerarsi estraneo agli obiettivi del progetto. Questo vincolo stabiliva quindi, già in questa fase, che il contributo doveva integrarsi nel progetto esistente per estensione, non per sostituzione.
+Il contesto in cui si è operato imponeva due vincoli principali. Il primo riguardava la non modificabilità dei moduli già sviluppati: qualsiasi intervento che avesse richiesto di riscrivere o alterare il comportamento dei componenti esistenti è da considerarsi estraneo agli obiettivi del progetto. Questo vincolo stabilisce quindi, già in questa fase, che il contributo deve integrarsi nel progetto esistente per estensione, non per sostituzione.
 
-Il secondo vincolo, strettamente connesso al primo, riguardava il broker \ac{MQTT} interno. Sebbene la dipendenza da \ac{MQTT} rappresenti proprio il limite che si intendeva superare, la sua rimozione avrebbe comportato una riscrittura completa di tutti i moduli del sistema. \ac{MQTT} rimaneva quindi il protocollo interno, e qualsiasi soluzione doveva operare al di sopra di questa viscosità tecnologica\footnote{Con \textit{viscosità tecnologica} si intende la resistenza al cambiamento che emerge quando una tecnologia è così profondamente integrata in un sistema da rendere la sua sostituzione sproporzionatamente costosa.} piuttosto che tentare di eliminarla.
+Il secondo vincolo, strettamente connesso al primo, riguarda il broker \ac{MQTT} interno. Sebbene la dipendenza da \ac{MQTT} rappresenti proprio il limite che si intende superare, la sua rimozione avrebbe comportato una riscrittura completa di tutti i moduli del sistema. \ac{MQTT} rimane quindi il protocollo interno, e qualsiasi soluzione deve operare al di sopra di questa viscosità tecnologica\footnote{Con \textit{viscosità tecnologica} si intende la resistenza al cambiamento che emerge quando una tecnologia è così profondamente integrata in un sistema da rendere la sua sostituzione sproporzionatamente costosa.} piuttosto che tentare di eliminarla.
 %
 \section{Requisiti}
 \label{sec:requisiti}
@@ -24,19 +24,37 @@ I requisiti individuati si articolano su due livelli: funzionali, relativi alle 
 \subsection{Requisiti funzionali}
 \label{subsec:requisiti-funzionali}
 %
-Il sistema doveva esporre verso l'esterno un insieme di protocolli di comunicazione eterogenei, ciascuno con il proprio modello di interazione, permettendo a client diversi di accedere alle stesse risorse interne attraverso l'interfaccia più adatta alle proprie capacità. Per ciascun protocollo esposto, doveva essere possibile sia leggere il valore aggiornato di una risorsa sia aggiornarla, preservando verso l'esterno la semantica di notifica continua tipica del modello publish/subscribe, indipendentemente dal protocollo effettivamente usato. Tra le modalità di interazione supportate, il sistema doveva prevedere sia un modello request/response, per client che interrogano le risorse in modo puntuale, sia un modello a notifica, per client che necessitano di aggiornamenti continui senza dover interrogare ripetutamente il sistema.
+\newlist{reqfun}{enumerate}{1}
+\setlist[reqfun,1]{label=RQF\arabic*.,ref=RQF\arabic*}
+%
+\begin{reqfun}
+  \item \label{req:rqf1} Il sistema deve esporre verso l'esterno un insieme di protocolli di comunicazione eterogenei, ciascuno con il proprio modello di interazione, permettendo a client diversi di accedere alle stesse risorse interne attraverso l'interfaccia più adatta alle proprie capacità.
 
-Doveva inoltre essere possibile aggiungere nuovi protocolli in futuro per supportare client con capacità diverse.
+  \item \label{req:rqf2} Per ciascun protocollo esposto, deve essere possibile sia leggere il valore aggiornato di una risorsa sia aggiornarla, preservando verso l'esterno la semantica di notifica continua tipica del modello publish/subscribe, indipendentemente dal protocollo effettivamente usato.
+
+  \item \label{req:rqf3} Tra le modalità di interazione supportate, il sistema deve prevedere sia un modello request/response, per client che interrogano le risorse in modo puntuale, sia un modello a notifica, per client che necessitano di aggiornamenti continui senza dover interrogare ripetutamente il sistema.
+
+  \item \label{req:rqf4} Deve essere possibile aggiungere nuovi protocolli in futuro per supportare client con capacità diverse.
+\end{reqfun}
 %
 \subsection{Requisiti non funzionali}
 \label{subsec:requisiti-non-funzionali}
 %
-Data la natura IoT del sistema, il modulo doveva essere in grado di gestire un elevato numero di connessioni simultanee, mantenendo latenze contenute anche sotto carico. Aggiungere un nuovo protocollo non avrebbe dovuto richiedere modifiche al nucleo già esistente del modulo, ma solo l'implementazione di una nuova componente aggiuntiva. Infine, il sistema doveva essere progettato in modo da facilitare il testing automatico, sia per verificare il comportamento dei singoli componenti sia per garantire la correttezza dell'integrazione complessiva.
+\newlist{reqnonfun}{enumerate}{1}
+\setlist[reqnonfun,1]{label=RQNF\arabic*.,ref=RQNF\arabic*}
+%
+\begin{reqnonfun}
+  \item \label{req:rqnf1} Data la natura IoT del sistema, il modulo deve essere in grado di gestire un elevato numero di connessioni simultanee, mantenendo latenze contenute anche sotto carico.
+
+  \item \label{req:rqnf2} Aggiungere un nuovo protocollo non deve richiedere modifiche al nucleo già esistente del modulo, ma solo l'implementazione di una nuova componente aggiuntiva.
+
+  \item \label{req:rqnf3} Il sistema deve essere progettato in modo da facilitare il testing automatico, sia per verificare il comportamento dei singoli componenti sia per garantire la correttezza dell'integrazione complessiva.
+\end{reqnonfun}
 %
 \subsection{Profili di utilizzo}
 \label{subsec:profili-di-utilizzo}
 %
-I client che dovranno essere serviti non sono omogenei né per capacità né per modello di interazione. È utile distinguere tre profili principali.
+I client che devono essere serviti non sono omogenei né per capacità né per modello di interazione. È utile distinguere tre profili principali.
 
 Il primo è quello del client browser: un'applicazione web come la dashboard attuale, che non può aprire connessioni \ac{MQTT} native e necessita quindi di un'interfaccia basata su protocolli HTTP o derivati.
 
@@ -49,7 +67,7 @@ Questi tre profili non esauriscono tutti i casi possibili, ma guidano le scelte 
 \section{Modellazione delle Entità}
 \label{sec:modellazione-delle-entita}
 %
-Prima di procedere alla progettazione della soluzione, è stato necessario definire con precisione il modello del dominio: ogni risorsa che questo servizio avrebbe dovuto esporre verso l'esterno doveva corrispondere a un'entità ben identificata, con una semantica chiara e stabile. A tale scopo sono stati analizzati i topic \ac{MQTT} già presenti nel progetto, esaminandone la struttura e il payload, e da questi è stato condotto un lavoro di astrazione e generalizzazione che ha portato a un modello capace di accogliere anche categorie di dati non ancora presenti, come quelle derivanti da sensori ambientali che potranno essere aggiunti in futuro a ciascun robot.
+Prima di procedere alla progettazione della soluzione, è stato necessario definire con precisione il modello del dominio: ogni risorsa che questo servizio espone verso l'esterno deve corrispondere a un'entità ben identificata, con una semantica chiara e stabile. A tale scopo sono stati analizzati i topic \ac{MQTT} già presenti nel progetto, esaminandone la struttura e il payload, e da questi è stato condotto un lavoro di astrazione e generalizzazione che ha portato a un modello capace di accogliere anche categorie di dati non ancora presenti, come quelle derivanti da sensori ambientali che potranno essere aggiunti in futuro a ciascun robot.
 
 Il risultato di questa fase è sintetizzato nello schema in \cref{fig:entita}, che rappresenta le entità di dominio e le relazioni tra esse. Le entità si dividono in due gruppi concettualmente distinti: quelle che descrivono lo stato ambientale e fisico dei robot, e quelle che rappresentano gli input esterni forniti al sistema dall'operatore. Al centro dello schema si colloca \textit{Logic}, il componente che aggrega le informazioni provenienti da entrambi i gruppi e produce come output i comandi di movimento.
 
@@ -62,5 +80,5 @@ Il risultato di questa fase è sintetizzato nello schema in \cref{fig:entita}, c
 
 Nel primo gruppo, l'entità principale è \textit{Robot}, identificata univocamente da un proprio ID. A essa sono collegate diverse entità che ne descrivono lo stato: \textit{Neighborhood} rappresenta l'insieme dei robot vicini, caratterizzato da un tipo e da un raggio opzionale, ed è legato al robot da una relazione di aggregazione; \textit{Space} è lo spazio in cui il robot si muove, e all'interno di esso il robot assume una \textit{Pose}, composta da posizione e orientamento; infine, \textit{Sensing} rappresenta in modo generico tutte le categorie di dati sensoriali associabili a un robot, fungendo da punto di estensione del modello per acquisizioni future. L'entità \textit{Movement} rappresenta il comando di spostamento calcolato da \textit{Logic} a partire dallo stato ambientale ricevuto dai robot.
 
-Nel secondo gruppo si trovano le entità che modellano gli input operativi del sistema: \textit{Formation}, che indica la formazione geometrica impartita allo sciame -- gli scenari selezionabili di cui si parla in \cref{subsec:archiettura-e-funzionamento} --, e \textit{Leader}, che identifica il robot designato come capo del gruppo. Entrambe sono modellate come sottotipi di una entità astratta \textit{Input}, ricevuta da \textit{Logic} per influenzare il comportamento aggregato del sistema.
+Nel secondo gruppo si trovano le entità che modellano gli input operativi del sistema: \textit{Formation}, che indica la formazione geometrica impartita allo sciame (gli scenari selezionabili di cui si parla in \cref{subsec:archiettura-e-funzionamento}), e \textit{Leader}, che identifica il robot designato come capo del gruppo. Entrambe sono modellate come sottotipi di una entità astratta \textit{Input}, ricevuta da \textit{Logic} per influenzare il comportamento aggregato del sistema.
 %
