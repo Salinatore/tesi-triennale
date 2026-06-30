@@ -2125,51 +2125,51 @@
 } % datatracker
 
 @software{fastapi,
-  author = {Ramírez, Sebastián},
+  author  = {Ramírez, Sebastián},
   license = {MIT},
-  title = {{FastAPI}},
-  url = {https://github.com/fastapi/fastapi}
+  title   = {{FastAPI}},
+  url     = {https://github.com/fastapi/fastapi}
 } % GitHub
 
 @software{pydantic,
-  author = {Colvin, Samuel and Jolibois, Eric and Ramezani, Hasan and Garcia Badaracco, Adrian and Dorsey, Terrence and Montague, David and Matveenko, Serge and Trylesinski, Marcelo and Runkle, Sydney and Hewitt, David and Hall, Alex and Plot, Victorien},
+  author  = {Colvin, Samuel and Jolibois, Eric and Ramezani, Hasan and Garcia Badaracco, Adrian and Dorsey, Terrence and Montague, David and Matveenko, Serge and Trylesinski, Marcelo and Runkle, Sydney and Hewitt, David and Hall, Alex and Plot, Victorien},
   license = {MIT},
-  title = {{Pydantic Validation}},
-  url = {https://github.com/pydantic/pydantic},
+  title   = {{Pydantic Validation}},
+  url     = {https://github.com/pydantic/pydantic},
   version = {2.12.5},
-  year = {2026}
+  year    = {2026}
 }  % GitHub
 
 @software{aiocoap,
-  author = {Amsüss, Christian and {the aiocoap contributors}},
-  title = {{aiocoap}},
-  url = {https://christian.amsuess.com/tools/aiocoap/},
+  author  = {Amsüss, Christian and {the aiocoap contributors}},
+  title   = {{aiocoap}},
+  url     = {https://christian.amsuess.com/tools/aiocoap/},
   version = {0.4.17}
 } % GitHub
 
 @software{uvicorn,
-  author = {Trylesinski, Marcelo and Christie, Tom},
+  author  = {Trylesinski, Marcelo and Christie, Tom},
   license = {BSD-3-Clause},
-  title = {{Uvicorn}},
-  url = {https://github.com/Kludex/uvicorn},
+  title   = {{Uvicorn}},
+  url     = {https://github.com/Kludex/uvicorn}
 } % GitHub
 
 @software{aiomqtt,
-  author = {empicano},
-  title = {{aiomqtt}},
-  url = {https://github.com/empicano/aiomqtt},
+  author  = {empicano},
+  title   = {{aiomqtt}},
+  url     = {https://github.com/empicano/aiomqtt},
   version = {2.5.1},
-  year = {2026},
+  year    = {2026},
   license = {MIT}
 } % Me
 
 @software{uv,
   organization = {Astral},
-  title = {{uv}},
-  url = {https://docs.astral.sh/uv/},
-  version = {0.11.7},
-  year = {2026},
-  license = {MIT}
+  title        = {{uv}},
+  url          = {https://docs.astral.sh/uv/},
+  version      = {0.11.7},
+  year         = {2026},
+  license      = {MIT}
 } % Me
 
 @standard{openapi,
@@ -2179,5 +2179,31 @@
   institution = {{Linux Foundation}},
   url         = {https://spec.openapis.org/oas/v3.1.0.html},
   year        = {2021},
-  month       = feb,
+  month       = feb
+}
+
+@article{aggregateprogramming,
+  author   = {Beal, Jacob and Pianini, Danilo and Viroli, Mirko},
+  journal  = {Computer},
+  title    = {Aggregate Programming for the Internet of Things},
+  year     = {2015},
+  volume   = {48},
+  number   = {9},
+  pages    = {22-30},
+  keywords = {Internet of things;Programming;Embedded systems;Internet of things;Aggregate programmin;Pervasive computing;aggregate programming;pervasive computing;field calculus;distributed systems;domain-specific languages;DSLs;embedded systems;Internet of Things;IoT},
+  doi      = {10.1109/MC.2015.261}
+}
+
+@article{fieldcalculus,
+  title    = {From distributed coordination to field calculus and aggregate computing},
+  journal  = {Journal of Logical and Algebraic Methods in Programming},
+  volume   = {109},
+  pages    = {100486},
+  year     = {2019},
+  issn     = {2352-2208},
+  doi      = {https://doi.org/10.1016/j.jlamp.2019.100486},
+  url      = {https://www.sciencedirect.com/science/article/pii/S235222081930032X},
+  author   = {Mirko Viroli and Jacob Beal and Ferruccio Damiani and Giorgio Audrito and Roberto Casadei and Danilo Pianini},
+  keywords = {Distributed systems, Aggregate computing, Field calculus, Spatial computing},
+  abstract = {Aggregate computing is an emerging approach to the engineering of complex coordination for distributed systems, based on viewing system interactions in terms of information propagating through collectives of devices, rather than in terms of individual devices and their interaction with their peers and environment. The foundation of this approach is the distillation of a number of prior approaches, both formal and pragmatic, proposed under the umbrella of field-based coordination, and culminating into the field calculus, a universal functional programming model for the specification and composition of collective behaviours with equivalent local and aggregate semantics. This foundation has been elaborated into a layered approach to engineering coordination of complex distributed systems, building up to pragmatic applications through intermediate layers encompassing reusable libraries of program components. Furthermore, some of these components are formally shown to satisfy formal properties like self-stabilisation, which transfer to whole application services by functional composition. In this survey, we trace the development and antecedents of field calculus, review the field calculus itself and the current state of aggregate computing theory and practice, and discuss a roadmap of current research directions with implications for the development of a broad range of distributed systems.}
 }
