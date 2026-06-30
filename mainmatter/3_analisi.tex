@@ -25,7 +25,15 @@ I requisiti individuati si articolano su due livelli: funzionali, relativi alle 
 \label{subsec:requisiti-funzionali}
 %
 \newlist{reqfun}{enumerate}{1}
-\setlist[reqfun,1]{label=RQF\arabic*.,ref=RQF\arabic*}
+\setlist[reqfun,1]{%
+  label=RQF\arabic*.,
+  ref=RQF\arabic*,
+  leftmargin=*,        % il testo si allinea al bordo dell'etichetta più larga
+  labelwidth=2.5em,     % larghezza riservata all'etichetta (regola in base al testo più lungo, es. "RQF10.")
+  labelsep=0.5em,       % spazio tra etichetta e testo
+  align=left,           % l'etichetta è allineata a sinistra nello spazio riservato
+  itemsep=0.5em         % spaziatura verticale tra gli item (opzionale)
+}
 %
 \begin{reqfun}
   \item \label{req:rqf1} Il sistema deve esporre verso l'esterno un insieme di protocolli di comunicazione eterogenei, ciascuno con il proprio modello di interazione, permettendo a client diversi di accedere alle stesse risorse interne attraverso l'interfaccia più adatta alle proprie capacità.
@@ -41,7 +49,14 @@ I requisiti individuati si articolano su due livelli: funzionali, relativi alle 
 \label{subsec:requisiti-non-funzionali}
 %
 \newlist{reqnonfun}{enumerate}{1}
-\setlist[reqnonfun,1]{label=RQNF\arabic*.,ref=RQNF\arabic*}
+\setlist[reqnonfun,1]{%
+  label=RQNF\arabic*.,
+  ref=RQNF\arabic*,
+  leftmargin=*,
+  labelwidth=3em,
+  labelsep=0.5em,
+  align=left
+}
 %
 \begin{reqnonfun}
   \item \label{req:rqnf1} Data la natura IoT del sistema, il modulo deve essere in grado di gestire un elevato numero di connessioni simultanee, mantenendo latenze contenute anche sotto carico.
