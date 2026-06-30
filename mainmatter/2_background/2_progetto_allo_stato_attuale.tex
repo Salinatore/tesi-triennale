@@ -1,7 +1,7 @@
 \section{Project Emerge}
 \label{sec:progetto-allo-stato-attuale}
 %
-Questa sezione presenta l'applicazione concreta di Aggregate Computing nel sistema \textit{Emerge}, il dimostratore realizzato dal gruppo di ricerca e punto di partenza del lavoro di tirocinio descritto in questa tesi: si illustrano dapprima l'obiettivo che ne ha guidato lo sviluppo (\cref{subsec:obbiettivo}), quindi l'architettura attraverso cui tale obiettivo è stato realizzato (\cref{subsec:archiettura-e-funzionamento}); infine si analizzano i vincoli strutturali emersi da queste scelte progettuali (\cref{subsec:vincoli}), che costituiscono il punto di partenza per l'analisi presentata nel capitolo successivo.
+Questa sezione presenta l'applicazione concreta di Aggregate Computing nel sistema \textit{Emerge}, il dimostratore realizzato dal gruppo di ricerca e punto di partenza del lavoro di tirocinio descritto in questa tesi: si illustrano dapprima l'obiettivo che ne ha guidato lo sviluppo (\Cref{subsec:obbiettivo}), quindi l'architettura attraverso cui tale obiettivo è stato realizzato (\Cref{subsec:archiettura-e-funzionamento}); infine si analizzano i vincoli strutturali emersi da queste scelte progettuali (\Cref{subsec:vincoli}), che costituiscono il punto di partenza per l'analisi presentata nel capitolo successivo.
 %
 \subsection{Obiettivo}
 \label{subsec:obbiettivo}
@@ -17,7 +17,7 @@ Oltre agli aspetti tecnici, il progetto aveva anche una finalità divulgativa: r
 \subsection{Architettura e funzionamento}
 \label{subsec:archiettura-e-funzionamento}
 %
-Il sistema realizzato, chiamato \textit{Emerge}, è composto da quattro moduli principali -- \texttt{aruco-detector}, \texttt{neighborhood-system}, \texttt{aggregate-runtime}, \texttt{dashboard} -- che realizzano concretamente le astrazioni architetturali proposte nel modello di riferimento: \texttt{EnvironmentProvider}, \texttt{Orchestrator} ed \texttt{EnvironmentUpdate}. Ciascun modulo ha un ruolo ben definito e comunica con gli altri esclusivamente attraverso un broker \ac{MQTT} centralizzato (Mosquitto), che funge da unico bus di comunicazione dell'intero sistema. Questa scelta architetturale garantisce un disaccoppiamento naturale tra i componenti. Le connessioni tra i moduli sono illustrate in \cref{fig:connections}.
+Il sistema realizzato, chiamato \textit{Emerge}, è composto da quattro moduli principali -- \texttt{aruco-detector}, \texttt{neighborhood-system}, \texttt{aggregate-runtime}, \texttt{dashboard} -- che realizzano concretamente le astrazioni architetturali proposte nel modello di riferimento: \texttt{EnvironmentProvider}, \texttt{Orchestrator} ed \texttt{EnvironmentUpdate}. Ciascun modulo ha un ruolo ben definito e comunica con gli altri esclusivamente attraverso un broker \ac{MQTT} centralizzato (Mosquitto), che funge da unico bus di comunicazione dell'intero sistema. Questa scelta architetturale garantisce un disaccoppiamento naturale tra i componenti. Le connessioni tra i moduli sono illustrate in \Cref{fig:connections}.
 
 \begin{figure}
     \centering
