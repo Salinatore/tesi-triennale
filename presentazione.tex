@@ -1,0 +1,307 @@
+% ============================================================
+%  Presentazione Tesi — Alessandro Gardini
+%  Compilare con: pdflatex > pdflatex
+%  Oppure carica su Overleaf e premi "Recompile".
+%
+%  IMPORTANTE: le immagini richiamate sotto sono le stesse
+%  già usate nella tesi (stessi path relativi a figures/).
+%  Basta copiare la cartella figures/ della tesi accanto a
+%  questo file .tex.
+% ============================================================
+
+\documentclass[aspectratio=169]{beamer}
+
+% ── Tema base ───────────────────────────────────────────────
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% ── Palette colori ───────────
+\definecolor{thesisPrimary}{HTML}{BB2E29}
+\definecolor{thesisSecondary}{HTML}{53565A}
+
+\setbeamercolor{palette primary}{bg=thesisPrimary, fg=white}
+\setbeamercolor{palette secondary}{bg=thesisSecondary, fg=white}
+\setbeamercolor{block title}{bg=thesisPrimary, fg=white}
+\setbeamercolor{block body}{bg=thesisPrimary!8}
+
+% ── Pacchetti ───────────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{acronym}
+
+% ── Stile listings ───────────────────
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{thesisSecondary}\bfseries,
+  stringstyle=\color{green!40!black},
+  commentstyle=\color{gray}\itshape,
+  frame=single,
+  rulecolor=\color{thesisSecondary!40},
+  xleftmargin=1em,
+  xrightmargin=1em,
+  numbers=none,
+  breaklines=true,
+  showstringspaces=false,
+}
+
+% ── Acronimi (solo quelli usati nelle slide) ─────────────────
+\acrodef{MQTT}{Message Queuing Telemetry Transport}
+\acrodef{HTTP}{Hypertext Transfer Protocol}
+\acrodef{CoAP}{Constrained Application Protocol}
+\acrodef{REST}{Representational State Transfer}
+\acrodef{SSE}{Server-Sent Events}
+\acrodef{OpenAPI}{OpenAPI Specification}
+
+% ── Metadati ──────────────────────────────────
+\title{Progettazione di un framework protocol-agnostic per il coordinamento di sciami nel contesto di Project Emerge}
+\author{Alessandro Gardini}
+\institute{Corso di Laurea in Ingegneria e Scienze Informatiche \\ Relatore: Mirko Viroli \\ Correlatori: Gianluca Aguzzi, Nicolas Farabegoli}
+\date{A.A. 2025/2026}
+
+\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{navigation symbols}{}
+
+% ============================================================
+\begin{document}
+
+% ── SLIDE TITOLO ─────────────────────────────────────────────
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% ── INDICE ───────────────────────────────────────────────────
+\begin{frame}{Indice}
+    \tableofcontents
+\end{frame}
+
+% ============================================================
+\section{Contesto e Problema}
+% ============================================================
+
+\begin{frame}{Project Emerge}
+    \begin{columns}
+        \begin{column}{0.55\textwidth}
+            \begin{itemize}
+                \item Dimostratore open-source di \textbf{Aggregate Computing} per il coordinamento di sciami di robot mobili (\textit{MacroSwarm} + \textit{ScaFi})
+                \item Obiettivi dimostrativi: formazione spaziale, \textit{self-healing}, indipendenza dalla topologia
+                \item Quattro moduli: \texttt{aruco-detector}, \texttt{neighborhood-system}, \texttt{aggregate-runtime}, \texttt{dashboard}
+                \item Comunicazione \textbf{esclusivamente} tramite broker \ac{MQTT} centralizzato
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.45\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figures/background/connections.pdf}
+            \small Moduli di Emerge connessi via MQTT
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Il problema: rigidità architetturale}
+    \begin{block}{Vincolo strutturale}
+        Ogni robot o client deve necessariamente supportare \ac{MQTT} per partecipare al sistema.
+    \end{block}
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item Robot eterogenei senza client \ac{MQTT} nativo $\rightarrow$ \textbf{incompatibili}
+        \item La \texttt{dashboard} deve ricorrere a MQTT-over-WebSocket per aggirare i limiti del browser
+        \item Nessuna via per integrare protocolli diversi senza modificare i moduli esistenti
+    \end{itemize}
+    \vspace{0.3cm}
+    \begin{alertblock}{Obiettivo della tesi}
+        Rendere il sistema \textbf{protocol-agnostic}: disaccoppiare il protocollo interno da quelli usati per comunicare con l'esterno, senza modificare i moduli già esistenti.
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}{Requisiti}
+    \begin{columns}[t]
+        \begin{column}{0.5\textwidth}
+            \textbf{Funzionali}
+            \begin{itemize}
+                \small
+                \item Esporre protocolli eterogenei verso l'esterno
+                \item Lettura \emph{e} scrittura per ciascuna risorsa
+                \item Supporto sia request/response sia notifica continua
+                \item Estendibilità: nuovi protocolli in futuro
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \textbf{Non funzionali}
+            \begin{itemize}
+                \small
+                \item Molte connessioni simultanee, latenza contenuta
+                \item Nuovo protocollo $\Rightarrow$ nessuna modifica al nucleo
+                \item Testabilità automatica dei componenti
+            \end{itemize}
+        \end{column}
+    \end{columns}
+    \vspace{0.4cm}
+    \centering
+    \small Tre profili di client da servire: \textbf{browser} (HTTP/WebSocket), \textbf{dispositivi embedded} (CoAP), \textbf{client generici} (REST)
+\end{frame}
+
+% ============================================================
+\section{Progettazione}
+% ============================================================
+
+\begin{frame}{La soluzione: domain gateway}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{itemize}
+                \item Un unico modulo aggiuntivo si frappone tra broker \ac{MQTT} interno e client esterni
+                \item Traduce i messaggi da un protocollo all'altro, mantenendo i due mondi disaccoppiati
+                \item I moduli esistenti restano \textbf{invariati}
+                \item Effetto collaterale utile: anche il protocollo interno potrebbe in futuro essere sostituito senza impattare i client esterni
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figures/progettazione/archiettura-sistema.pdf}
+            \small Il gateway nell'architettura di Emerge
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Architettura interna del gateway}
+    \begin{columns}
+        \begin{column}{0.48\textwidth}
+            \textbf{Tre elementi chiave}
+            \begin{itemize}
+                \small
+                \item \textbf{Connessioni}: un sotto-modulo per protocollo (MQTT, HTTP, WebSocket, CoAP)
+                \item \textbf{Bus interni}: \textit{Inbound} ed \textit{Outbound}, per scambiare messaggi senza accoppiamento diretto
+                \item \textbf{Cache}: risponde immediatamente ai client request/response, aggiornata dall'\textit{Outbound Bus}
+            \end{itemize}
+            \vspace{0.2cm}
+            \small Semantica \emph{fire-and-forget}, coerente con MQTT; DI di bus e cache $\Rightarrow$ componenti facilmente testabili
+        \end{column}
+        \begin{column}{0.52\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figures/progettazione/archiettura-sistema-interno.pdf}
+            \small Connessioni, bus e cache
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{I protocolli esposti}
+    \centering
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Protocollo} & \textbf{Modello}                    & \textbf{Target}                    \\
+        \midrule
+        \ac{HTTP} \ac{REST} & Request/response (GET/PUT)          & Client browser, generici           \\
+        WebSocket           & Bidirezionale + sottoscrizioni      & Client browser (notifica continua) \\
+        \ac{CoAP}           & Request/response + \textit{Observe} & Dispositivi embedded               \\
+        \ac{MQTT}           & Publish/subscribe (interno)         & Moduli e robot esistenti           \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.4cm}
+    \small Tutte le entità di dominio (Robot, Position, Formation, Leader, \dots) condividono gli stessi modelli Pydantic, indipendentemente dal protocollo.
+\end{frame}
+
+\begin{frame}{Perché WebSocket per i client TCP event-driven}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{itemize}
+                \item \textbf{Callback}: scartata, richiede un server HTTP lato client + apertura di una connessione per ogni notifica
+                \item \textbf{SSE}: scartata, unidirezionale e richiede una connessione per ciascuna risorsa osservata
+                \item \textbf{WebSocket}: canale unico, bidirezionale, persistente $\Rightarrow$ scelto
+            \end{itemize}
+            \vspace{0.2cm}
+            \small Ciclo di vita delle sottoscrizioni gestito via REST (POST/GET/DELETE); gli aggiornamenti viaggiano sul canale WebSocket già aperto
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figures/progettazione/websocket.pdf}
+            \small Interazione via WebSocket + sottoscrizioni REST
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% ============================================================
+\section{Implementazione}
+% ============================================================
+
+\begin{frame}{Stack tecnologico}
+    \begin{itemize}
+        \item \textbf{Python 3.13} + \texttt{asyncio}: singolo processo/event loop, ideale per un componente I/O-bound
+        \item \textbf{FastAPI} + Uvicorn: connessioni HTTP e WebSocket sulla stessa app ASGI, \ac{OpenAPI} generata automaticamente, dependency injection
+        \item \textbf{aiocoap}: unica implementazione asincrona matura per CoAP, supporto nativo a \textit{Observe}
+        \item \textbf{aiomqtt}: client MQTT async/await
+        \item \textbf{Pydantic}: unica fonte di verità per lo schema dei dati su tutti i protocolli
+        \item Distribuzione: immagine \textbf{Docker} multi-stage, configurazione via variabili d'ambiente
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Il nucleo: \texttt{/core}}
+    \begin{itemize}
+        \item \textbf{Connection}: classe astratta, contratto uniforme (\texttt{start()}/\texttt{stop()}) per ogni protocollo
+        \item \textbf{Bus} (\texttt{MessageBus}): \texttt{publish()}/\texttt{subscribe()}, task concorrenti per subscriber, eccezioni isolate
+        \item \textbf{Cache} (\texttt{InMemoryCache}): si iscrive da sola all'Outbound Bus; sostituibile (es. Redis) senza toccare le connessioni
+        \item \textbf{Container}: \emph{composition root} — crea bus, cache, monitor e li inietta nelle connessioni; nessuno stato globale
+        \item \textbf{HealthMonitor}: ogni connessione riporta il proprio stato (critico o no) $\rightarrow$ \texttt{503} automatico se una connessione critica è \texttt{DOWN}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Dettagli per connessione}
+    \small
+    \begin{itemize}
+        \item \textbf{MQTT}: \texttt{\_listener}/\texttt{\_publisher} concorrenti; riconnessione con backoff esponenziale (2s $\to$ 60s) + jitter
+        \item \textbf{HTTP}: \texttt{GET}/\texttt{PUT} per entità, \texttt{PUT} scelto (aggiorna risorse già esistenti nel dominio, non ne crea)
+        \item \textbf{CoAP}: risorse dedicate (\texttt{FormationResource}, \texttt{LeaderResource}, \texttt{RobotsSubsite}); \texttt{Observe} nativo iscritto all'Outbound Bus
+        \item \textbf{WebSocket}: \texttt{WebSocketService} gestisce sia connessioni attive sia sottoscrizioni; invii concorrenti, fallimenti isolati per client
+    \end{itemize}
+\end{frame}
+
+% ============================================================
+\section{Valutazione e Conclusioni}
+% ============================================================
+
+\begin{frame}{Testing automatico}
+    \begin{itemize}
+        \item \texttt{pytest} + \texttt{pytest-asyncio} + \texttt{pytest-cov}; \texttt{TestClient} di Starlette per HTTP/WebSocket
+        \item \texttt{MockMQTTConnection}: sostituisce il broker reale grazie alla dependency injection del \texttt{Container}
+        \item \textbf{80 test}, tutti superati in $\sim$6 secondi
+        \item \textbf{Copertura 88\%} sul pacchetto \texttt{domain\_gateway} (vicina al 100\% su \texttt{/core})
+    \end{itemize}
+    \vspace{0.3cm}
+    \begin{alertblock}{Requisiti soddisfatti}
+        Lettura/scrittura multi-protocollo, notifica continua e request/response, estendibilità senza modifiche al nucleo.
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}{Conclusioni e sviluppi futuri}
+    \begin{columns}[t]
+        \begin{column}{0.5\textwidth}
+            \textbf{Contributo}
+            \begin{itemize}
+                \small
+                \item Domain gateway protocol-agnostic tra MQTT e HTTP/WebSocket/CoAP
+                \item Architettura a connessioni + bus + cache, estendibile per costruzione
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \textbf{Sviluppi futuri}
+            \begin{itemize}
+                \small
+                \item Sostituzione graduale di MQTT come protocollo interno
+                \item Nuovi protocolli (AMQP, gRPC)
+                \item Cache distribuita (Redis) per repliche multiple
+                \item Test di carico quantitativi
+            \end{itemize}
+        \end{column}
+    \end{columns}
+    \vspace{0.5cm}
+    \centering
+    \Large Grazie per l'attenzione
+\end{frame}
+
+\end{document}

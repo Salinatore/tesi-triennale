@@ -311,4 +311,4 @@ TSWLatexianTemp*
 .obsidian/
 
 # For now i don't want the thesis-main.pdf commited
-thesis-main.pdf
+*.pdf
