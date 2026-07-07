@@ -82,20 +82,13 @@
             Formalizzato dal \textit{field calculus}; su questa base: \textbf{MacroSwarm} (libreria di comportamenti di sciame) e \textbf{ScaFi} (framework di esecuzione in Scala)
         \end{block}
     \end{columns}
-
-    \vspace{2.1em}
-
-    \begin{block}{Esecuzione}
-        Round asincroni: percezione del vicinato $\rightarrow$ computazione locale $\rightarrow$ comunicazione dell'esito $\rightarrow$ comportamento collettivo emergente
-    \end{block}
 \end{frame}
 %
 \begin{frame}{Background: Project Emerge}
     \begin{columns}
         \column{0.5\textwidth}
         \centering
-        L'obbiettivo del progetto è la realizzazione di un dimostratore open-source per il coordinamento di sciami robotici reali, basato su MacroSwarm + ScaFi
-
+        L'obiettivo del progetto è la realizzazione di un dimostratore open-source che porti l'Aggregate Computing da un ambito teorico a un'implementazione reale.
         \column{0.5\textwidth}
         \begin{block}{Architettura}
             4 moduli -- ognuno responsabile di una determinata mansione -- comunicanti tramite un broker \textbf{MQTT} centralizzato
@@ -238,8 +231,6 @@
             \begin{itemize}
                 \item 80 test, tutti superati in $\sim$6s
                 \item Copertura complessiva: \textbf{88\%}
-                \item \texttt{/core} (Bus, Cache, Container, Monitor): $\sim$100\%
-                \item Possibili miglioramenti: \texttt{MQTTConnection} (35\%) -- backoff esponenziale non testato
             \end{itemize}
         \end{block}
     \end{columns}
@@ -259,7 +250,7 @@
             \begin{itemize}
                 \item Requisiti funzionali e non funzionali soddisfatti
                 \item Architettura estendibile: nuovo protocollo $\Rightarrow$ nuova connessione, nucleo invariato
-                \item Copertura test automatici buona
+
             \end{itemize}
         \end{block}
 
