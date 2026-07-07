@@ -1,0 +1,211 @@
+\documentclass[aspectratio=169]{beamer}
+
+% Tema base
+\usetheme{metropolis}
+\usecolortheme{default}
+
+% Palette colori 
+\definecolor{thesisPrimary}{HTML}{BB2E29}
+\definecolor{thesisSecondary}{HTML}{53565A}
+
+\setbeamercolor{palette primary}{bg=thesisPrimary, fg=white}
+\setbeamercolor{palette secondary}{bg=thesisSecondary, fg=white}
+\setbeamercolor{block title}{bg=thesisPrimary, fg=white}
+\setbeamercolor{block body}{bg=thesisPrimary!8, fg=black}
+\setbeamercolor{section in toc}{fg=thesisPrimary}
+\setbeamercolor{subsection in toc}{fg=thesisPrimary}
+\setbeamercolor{item projected}{bg=thesisPrimary, fg=white}
+
+% Pacchetti
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{booktabs}
+
+% Metadati
+\title{Progettazione di un framework protocol-agnostic per il coordinamento di sciami nel contesto di Project Emerge}
+\author{Alessandro Gardini}
+\institute{Corso di Laurea in Ingegneria e Scienze Informatiche \\ Relatore: Mirko Viroli \\ Correlatori: Gianluca Aguzzi, Nicolas Farabegoli}
+\date{A.A. 2025/2026}
+
+\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{navigation symbols}{}
+\AtBeginSection[]{}
+
+\begin{document}
+%
+\begin{frame}
+    \titlepage
+\end{frame}
+%
+\begin{frame}{Indice}
+    \tableofcontents
+\end{frame}
+%
+\section{Introduzione}
+%
+\section{Background}
+%
+\begin{frame}{Background: Aggregate Computing}
+    \begin{columns}
+        \column{0.45\textwidth}
+        \centering
+        Paradigma per programmare sciami di dispositivi eterogenei come un'unica entità collettiva, tramite \textbf{campi computazionali} -- senza controllo centralizzato
+        
+        \column{0.03\textwidth}
+
+        \column{0.45\textwidth}
+        \begin{block}{Fondamenta e strumenti}
+            Formalizzato dal \textit{field calculus}; su questa base: \textbf{MacroSwarm} (libreria di comportamenti di sciame) e \textbf{ScaFi} (framework di esecuzione in Scala)
+        \end{block}
+    \end{columns}
+
+    \vspace{2.1em}
+
+    \begin{block}{Esecuzione}
+            Round asincroni: percezione del vicinato $\rightarrow$ computazione locale $\rightarrow$ comunicazione dell'esito $\rightarrow$ comportamento collettivo emergente
+    \end{block}
+\end{frame}
+%
+\begin{frame}{Background: Project Emerge}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \centering
+        L'obbiettivo del progetto è la realizzazione di un dimostratore open-source per il coordinamento di sciami robotici reali, basato su MacroSwarm + ScaFi     
+
+        \column{0.5\textwidth}
+        \begin{block}{Architettura}
+            4 moduli -- ognuno responsabile di una determinata mansione -- comunicanti tramite un broker \textbf{MQTT} centralizzato
+        \end{block}
+
+        \vspace{1.4em}
+
+        \begin{block}{Vincolo strutturale}
+            Ogni componente, software e robot fisici, deve parlare MQTT $\Rightarrow$ nessun supporto per protocolli alternativi
+        \end{block}
+    \end{columns}
+\end{frame}
+%
+\begin{frame}{Background: connessioni tra i moduli di Emerge}
+    \begin{figure}
+        \centering
+        %\includegraphics[width=0.85\linewidth]{figures/background/connections.pdf}
+        \caption{Comunicazione tra i moduli: pubblicazione/sottoscrizione MQTT}
+    \end{figure}
+\end{frame}
+%
+\section{Analisi}
+%
+\begin{frame}{Analisi: obiettivi, vincoli e requisiti}
+    \centering
+    Obiettivo: rendere il sistema \textbf{protocol-agnostic}, disaccoppiando il protocollo interno (MQTT) da quelli usati dai client esterni
+
+    \vspace{1.5em}
+
+    \begin{columns}
+        \column{0.33\textwidth}
+        \begin{block}{Vincoli}
+            \begin{itemize}
+                \item Non modificare i moduli esistenti
+                \item MQTT resta il protocollo interno
+            \end{itemize}
+        \end{block}
+
+        \column{0.33\textwidth}
+        \begin{block}{Requisiti funzionali}
+            Esporre più protocolli eterogenei, con supporto sia a request/response sia a notifica, ed estendibilità futura
+        \end{block}
+
+        \column{0.33\textwidth}
+        \begin{block}{Requisiti non funzionali}
+            Molte connessioni simultanee, basse latenze, estendibilità senza toccare il nucleo, testabilità
+        \end{block}
+    \end{columns}
+\end{frame}
+%
+\begin{frame}{Analisi: modello di dominio}
+    \begin{figure}
+        \centering
+        %\includegraphics[width=0.75\linewidth]{figures/analisi/entità.pdf}
+        \caption{Schema delle entità di dominio}
+    \end{figure}
+\end{frame}
+%
+\section{Progettazione}
+%
+\begin{frame}{Progettazione: il \textit{domain gateway}}
+    \begin{columns}
+        \column{0.5\textwidth}
+        Un unico modulo aggiuntivo si frappone tra interno ed esterno del sistema, mediando tra broker \textbf{MQTT} e client eterogenei
+
+        \vspace{1em}
+
+        \begin{block}{Vantaggi}
+            \begin{itemize}
+                \item Moduli esistenti invariati
+                \item Nuovi protocolli $\Rightarrow$ si tocca solo il gateway
+                \item Supporta sia notifica continua sia request/response (grazie a una \textbf{cache} interna)
+            \end{itemize}
+        \end{block}
+
+        \column{0.5\textwidth}
+        \begin{figure}
+            \centering
+            %\includegraphics[width=\linewidth]{figures/progettazione/archiettura-sistema.pdf}
+            \caption{Architettura del sistema con l'introduzione del gateway}
+        \end{figure}
+    \end{columns}
+\end{frame}
+%
+\begin{frame}{Progettazione: struttura interna del gateway}
+    \begin{figure}
+        \centering
+        %\includegraphics[width=0.85\linewidth]{figures/progettazione/archiettura-sistema-interno.pdf}
+        \caption{Connessioni, bus (Inbound/Outbound) e cache}
+    \end{figure}
+
+    \vspace{0.5em}
+
+    \centering
+    \textbf{Connessioni} disaccoppiate tramite due \textbf{bus} $\rightarrow$ nuovo protocollo = nuova connessione, nessuna modifica al nucleo
+\end{frame}
+%
+\section{Implementazione}
+%
+\begin{frame}{Implementazione}
+    \begin{columns}
+        \column{0.48\textwidth}
+        \begin{block}{Stack tecnologico}
+            Python 3.13 + \texttt{asyncio}; FastAPI, \texttt{aiocoap}, \texttt{aiomqtt}, Pydantic
+        \end{block}
+
+        \vspace{0.8em}
+
+        \begin{block}{Interfacce e classi principali}
+            Connection, Bus, Cache, Container, Monitor
+        \end{block}
+
+        \column{0.48\textwidth}
+        \begin{figure}
+            \centering
+            %\includegraphics[width=\linewidth]{figures/implementazione/core-overview.pdf}
+            \caption{Connection, Bus, Cache orchestrati dal Container}
+        \end{figure}
+
+        \vspace{0.8em}
+
+        \centering
+        Ogni protocollo rappresenta una sottoclasse indipendente, registrata nel \texttt{Container} 
+    \end{columns}
+\end{frame}
+%
+\section{Valutazione}
+%
+\section{Conclusione}
+%
+\end{document}
