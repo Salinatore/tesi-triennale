@@ -312,3 +312,4 @@ TSWLatexianTemp*
 
 # For now i don't want the thesis-main.pdf commited
 *.pdf
+!*/figures/*.pdf
