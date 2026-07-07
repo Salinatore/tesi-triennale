@@ -43,11 +43,29 @@
     \titlepage
 \end{frame}
 %
-\begin{frame}{Indice}
-    \tableofcontents
-\end{frame}
+\section{Introduzione}
 %
 \section{Introduzione}
+%
+\begin{frame}{Introduzione}
+    \centering
+    \textit{Project Emerge}: dimostratore open-source per il coordinamento di sciami robotici, basato su \textbf{Aggregate Computing} (MacroSwarm + ScaFi)
+
+    \vspace{1.5em}
+
+    \begin{columns}
+        \column{0.48\textwidth}
+        \begin{block}{Problema}
+            Comunicazione vincolata a un unico protocollo (\textbf{MQTT}) $\Rightarrow$ impossibile integrare robot o client eterogenei
+        \end{block}
+
+        \column{0.48\textwidth}
+        \begin{block}{Obiettivo della tesi}
+            Progettare e implementare un \textbf{domain gateway} protocol-agnostic, che disaccoppi il protocollo interno da quelli esterni
+        \end{block}
+    \end{columns}
+\end{frame}
+%
 %
 \section{Background}
 %
@@ -56,7 +74,7 @@
         \column{0.45\textwidth}
         \centering
         Paradigma per programmare sciami di dispositivi eterogenei come un'unica entità collettiva, tramite \textbf{campi computazionali} -- senza controllo centralizzato
-        
+
         \column{0.03\textwidth}
 
         \column{0.45\textwidth}
@@ -68,7 +86,7 @@
     \vspace{2.1em}
 
     \begin{block}{Esecuzione}
-            Round asincroni: percezione del vicinato $\rightarrow$ computazione locale $\rightarrow$ comunicazione dell'esito $\rightarrow$ comportamento collettivo emergente
+        Round asincroni: percezione del vicinato $\rightarrow$ computazione locale $\rightarrow$ comunicazione dell'esito $\rightarrow$ comportamento collettivo emergente
     \end{block}
 \end{frame}
 %
@@ -76,7 +94,7 @@
     \begin{columns}
         \column{0.5\textwidth}
         \centering
-        L'obbiettivo del progetto è la realizzazione di un dimostratore open-source per il coordinamento di sciami robotici reali, basato su MacroSwarm + ScaFi     
+        L'obbiettivo del progetto è la realizzazione di un dimostratore open-source per il coordinamento di sciami robotici reali, basato su MacroSwarm + ScaFi
 
         \column{0.5\textwidth}
         \begin{block}{Architettura}
@@ -94,8 +112,8 @@
 \begin{frame}{Background: connessioni tra i moduli di Emerge}
     \begin{figure}
         \centering
-        %\includegraphics[width=0.85\linewidth]{figures/background/connections.pdf}
-        \caption{Comunicazione tra i moduli: pubblicazione/sottoscrizione MQTT}
+        \includegraphics[width=0.95\linewidth]{figures/connessioni.pdf}
+        \caption{I moduli e le loro connessioni}
     \end{figure}
 \end{frame}
 %
@@ -131,7 +149,7 @@
 \begin{frame}{Analisi: modello di dominio}
     \begin{figure}
         \centering
-        %\includegraphics[width=0.75\linewidth]{figures/analisi/entità.pdf}
+        \includegraphics[width=\linewidth]{figures/entita.pdf}
         \caption{Schema delle entità di dominio}
     \end{figure}
 \end{frame}
@@ -156,8 +174,8 @@
         \column{0.5\textwidth}
         \begin{figure}
             \centering
-            %\includegraphics[width=\linewidth]{figures/progettazione/archiettura-sistema.pdf}
-            \caption{Architettura del sistema con l'introduzione del gateway}
+            \includegraphics[width=\linewidth]{figures/arcchiettura-generale.pdf}
+            \caption{\centering Architettura del sistema con l'introduzione del gateway -- in rosso le aggiunte}
         \end{figure}
     \end{columns}
 \end{frame}
@@ -165,14 +183,13 @@
 \begin{frame}{Progettazione: struttura interna del gateway}
     \begin{figure}
         \centering
-        %\includegraphics[width=0.85\linewidth]{figures/progettazione/archiettura-sistema-interno.pdf}
-        \caption{Connessioni, bus (Inbound/Outbound) e cache}
+        \begin{columns}
+            \column{0.8\textwidth}
+            \includegraphics[width=\linewidth]{figures/archiettura-sistema-interno.pdf}
+            \column{0.2\textwidth}
+            \caption{\centering Connessioni, bus (Inbound/Outbound) e cache}
+        \end{columns}
     \end{figure}
-
-    \vspace{0.5em}
-
-    \centering
-    \textbf{Connessioni} disaccoppiate tramite due \textbf{bus} $\rightarrow$ nuovo protocollo = nuova connessione, nessuna modifica al nucleo
 \end{frame}
 %
 \section{Implementazione}
@@ -193,19 +210,77 @@
         \column{0.48\textwidth}
         \begin{figure}
             \centering
-            %\includegraphics[width=\linewidth]{figures/implementazione/core-overview.pdf}
-            \caption{Connection, Bus, Cache orchestrati dal Container}
+            \includegraphics[width=0.8\linewidth]{figures/overview.pdf}
+            \caption{Overview del Container}
         \end{figure}
-
-        \vspace{0.8em}
-
-        \centering
-        Ogni protocollo rappresenta una sottoclasse indipendente, registrata nel \texttt{Container} 
     \end{columns}
 \end{frame}
 %
 \section{Valutazione}
 %
+\begin{frame}{Valutazione: testing automatico}
+    \centering
+    La Dependency injection rende possibile iniettare connessioni Mock e isolare facilmente ogni singolo componente, senza modificare il codice applicativo.
+
+    \vspace{1em}
+
+    \begin{columns}
+        \column{0.48\textwidth}
+        \begin{block}{Strumenti e struttura}
+            \begin{itemize}
+                \item Organizzazione per protocollo: \texttt{http}, \texttt{ws}, \texttt{coap}
+                \item \texttt{MockMQTTConnection} iniettato al posto della reale connessione
+            \end{itemize}
+        \end{block}
+
+        \column{0.48\textwidth}
+        \begin{block}{Risultati}
+            \begin{itemize}
+                \item 80 test, tutti superati in $\sim$6s
+                \item Copertura complessiva: \textbf{88\%}
+                \item \texttt{/core} (Bus, Cache, Container, Monitor): $\sim$100\%
+                \item Possibili miglioramenti: \texttt{MQTTConnection} (35\%) -- backoff esponenziale non testato
+            \end{itemize}
+        \end{block}
+    \end{columns}
+\end{frame}
+%
 \section{Conclusione}
+%
+\begin{frame}{Conclusione}
+    \centering
+    È stato realizzato un \textbf{domain gateway} che disaccoppia il protocollo interno (MQTT) da quelli esterni, rendendo \textit{Project Emerge} protocol-agnostic
+
+    \vspace{1.2em}
+
+    \begin{columns}
+        \column{0.48\textwidth}
+        \begin{block}{Risultati}
+            \begin{itemize}
+                \item Requisiti funzionali e non funzionali soddisfatti
+                \item Architettura estendibile: nuovo protocollo $\Rightarrow$ nuova connessione, nucleo invariato
+                \item Copertura test automatici buona
+            \end{itemize}
+        \end{block}
+
+        \column{0.48\textwidth}
+        \begin{block}{Possibili sviluppi futuri}
+            \begin{itemize}
+                \item Test con prova reale del modulo
+                \item Sostituzione graduale di MQTT come protocollo interno
+                \item Supporto a nuovi protocolli
+                \item Cache distribuita, load balancing e replicazione
+            \end{itemize}
+        \end{block}
+    \end{columns}
+\end{frame}
+%
+\begin{frame}
+    Grazie per l'attenzione
+
+    \vspace{1em}
+
+    \Large Domande?
+\end{frame}
 %
 \end{document}
