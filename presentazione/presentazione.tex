@@ -43,61 +43,23 @@
     \titlepage
 \end{frame}
 %
-\section{Introduzione}
-%
-\section{Introduzione}
-%
-\begin{frame}{Introduzione}
-    \centering
-    \textit{Project Emerge}: dimostratore open-source per il coordinamento di sciami robotici, basato su \textbf{Aggregate Computing} (MacroSwarm + ScaFi)
-
-    \vspace{1.5em}
-
-    \begin{columns}
-        \column{0.48\textwidth}
-        \begin{block}{Problema}
-            Comunicazione vincolata a un unico protocollo (\textbf{MQTT}) $\Rightarrow$ impossibile integrare robot o client eterogenei
-        \end{block}
-
-        \column{0.48\textwidth}
-        \begin{block}{Obiettivo della tesi}
-            Progettare e implementare un \textbf{domain gateway} protocol-agnostic, che disaccoppi il protocollo interno da quelli esterni
-        \end{block}
-    \end{columns}
-\end{frame}
-%
-%
 \section{Background}
-%
-\begin{frame}{Background: Aggregate Computing}
-    \begin{columns}
-        \column{0.45\textwidth}
-        \centering
-        Paradigma per programmare sciami di dispositivi eterogenei come un'unica entità collettiva, tramite \textbf{campi computazionali} -- senza controllo centralizzato
-
-        \column{0.03\textwidth}
-
-        \column{0.45\textwidth}
-        \begin{block}{Fondamenta e strumenti}
-            Formalizzato dal \textit{field calculus}; su questa base: \textbf{MacroSwarm} (libreria di comportamenti di sciame) e \textbf{ScaFi} (framework di esecuzione in Scala)
-        \end{block}
-    \end{columns}
-\end{frame}
 %
 \begin{frame}{Background: Project Emerge}
     \begin{columns}
         \column{0.5\textwidth}
         \centering
-        L'obiettivo del progetto è la realizzazione di un dimostratore open-source che porti l'Aggregate Computing da un ambito teorico a un'implementazione reale.
+        \textit{Project Emerge}: dimostratore open-source che porta l'\textbf{Aggregate Computing} dall'ambito teorico a un'implementazione reale, per il coordinamento di sciami robotici
+
         \column{0.5\textwidth}
-        \begin{block}{Architettura}
-            4 moduli -- ognuno responsabile di una determinata mansione -- comunicanti tramite un broker \textbf{MQTT} centralizzato
+        \begin{block}{Aggregate Computing}
+            Paradigma per programmare sciami di dispositivi eterogenei come un'unica entità collettiva -- senza controllo centralizzato
         \end{block}
 
         \vspace{1.4em}
 
-        \begin{block}{Vincolo strutturale}
-            Ogni componente, software e robot fisici, deve parlare MQTT $\Rightarrow$ nessun supporto per protocolli alternativi
+        \begin{block}{Architettura}
+            4 moduli -- ognuno responsabile di una determinata mansione -- e robot comunicanti tramite un broker \textbf{MQTT} centralizzato
         \end{block}
     \end{columns}
 \end{frame}
@@ -114,7 +76,7 @@
 %
 \begin{frame}{Analisi: obiettivi, vincoli e requisiti}
     \centering
-    Obiettivo: rendere il sistema \textbf{protocol-agnostic}, disaccoppiando il protocollo interno (MQTT) da quelli usati dai client esterni
+    Obiettivo: rendere il sistema \textbf{protocol-agnostic}, rendendo possibile a client eterogenei di interagire con il sistema
 
     \vspace{1.5em}
 
@@ -123,7 +85,7 @@
         \begin{block}{Vincoli}
             \begin{itemize}
                 \item Non modificare i moduli esistenti
-                \item MQTT resta il protocollo interno
+                \item MQTT resta il protocollo
             \end{itemize}
         \end{block}
 
@@ -152,7 +114,8 @@
 \begin{frame}{Progettazione: il \textit{domain gateway}}
     \begin{columns}
         \column{0.5\textwidth}
-        Un unico modulo aggiuntivo si frappone tra interno ed esterno del sistema, mediando tra broker \textbf{MQTT} e client eterogenei
+        \centering
+        Un unico modulo aggiuntivo si frappone tra il broker MQTT e i client eterogenei, mediando la comunicazione tra i due
 
         \vspace{1em}
 
@@ -197,7 +160,7 @@
         \vspace{0.8em}
 
         \begin{block}{Interfacce e classi principali}
-            Connection, Bus, Cache, Container, Monitor
+            Connection, Bus, Cache, Container
         \end{block}
 
         \vspace{0.8em}
@@ -221,13 +184,13 @@
     \centering
     La Dependency injection rende possibile iniettare connessioni Mock e isolare facilmente ogni singolo componente, senza modificare il codice applicativo.
 
-    \vspace{1em}
+    \vspace{2em}
 
     \begin{columns}
         \column{0.48\textwidth}
         \begin{block}{Strumenti e struttura}
             \begin{itemize}
-                \item Organizzazione per protocollo: \texttt{http}, \texttt{ws}, \texttt{coap}
+                \item Organizzazione per protocollo
                 \item \texttt{MockMQTTConnection} iniettato al posto della reale connessione
             \end{itemize}
         \end{block}
@@ -245,18 +208,12 @@
 \section{Conclusione}
 %
 \begin{frame}{Conclusione}
-    \centering
-    È stato realizzato un \textbf{domain gateway} che disaccoppia il protocollo interno (MQTT) da quelli esterni, rendendo \textit{Project Emerge} protocol-agnostic
-
-    \vspace{1.2em}
-
     \begin{columns}
         \column{0.48\textwidth}
         \begin{block}{Risultati}
             \begin{itemize}
                 \item Requisiti funzionali e non funzionali soddisfatti
                 \item Architettura estendibile: nuovo protocollo $\Rightarrow$ nuova connessione, nucleo invariato
-
             \end{itemize}
         \end{block}
 
